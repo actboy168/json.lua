@@ -8,5 +8,7 @@ jobs:
       with:
         ref: refs/heads/master
         submodules : recursive
-    - uses: actboy168/setup-luamake@master
-    - run: luamake lua test/test.lua
+    - uses: xpol/setup-lua@v1
+      with:
+        lua-version: "5.3.5"
+    - run: lua test/test.lua
