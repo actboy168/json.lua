@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lua",
+            "request": "launch",
+            "luaVersion": "5.4",
+            "luaArch": "x86",
+            "name": "Launch",
+            "program": "test/test.lua",
+            "arg": [
+            ]
+        }
+    ]
+}
