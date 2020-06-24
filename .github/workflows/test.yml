@@ -1,0 +1,12 @@
+name: test
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        ref: refs/heads/master
+        submodules : recursive
+    - uses: actboy168/setup-luamake@master
+    - run: luamake lua test/test.lua
