@@ -4,29 +4,28 @@ package.path = "test/?.lua"
 package.cpath = "test/?.dll"
 
 local lu = require "luaunit"
-local fs = require "bee.filesystem"
-local TestSuite = fs.path "test" / "JSONTestSuite"
 local ERROR = ": ERROR: "
 
-local function sortpairs(dir)
-    local sort = {}
-    for path in dir:list_directory() do
-        sort[#sort+1] = path:string()
+local function each_directory(dir)
+    local command = "dir /B " .. dir:gsub("/", "\\")
+    local lst = {}
+    for file in io.popen(command):lines() do
+        lst[#lst+1] = file
     end
-    table.sort(sort)
+    table.sort(lst)
     local n = 1
     return function ()
-        local k = sort[n]
-        if k == nil then
+        local v = lst[n]
+        if v == nil then
             return
         end
         n = n + 1
-        return fs.path(k)
+        return v, dir.."/"..v
     end
 end
 
 local function readfile(path)
-    local f = assert(io.open(path:string(), "rb"))
+    local f = assert(io.open(path, "rb"))
     if f:read(3) ~= "\xEF\xBB\xBF" then
         f:seek "set"
     end
@@ -57,8 +56,7 @@ local function test_impl(path)
 end
 
 local parsing = lu.test "parsing"
-for path in sortpairs(TestSuite / "test_parsing") do
-    local name = path:filename():string()
+for name, path in each_directory "test/JSONTestSuite/test_parsing" do
     local type = name:sub(1,1)
     if type == "y" then
         parsing[name] = test_yes(path)
@@ -76,8 +74,7 @@ for path in sortpairs(TestSuite / "test_parsing") do
 end
 
 local transform = lu.test "transform"
-for path in sortpairs(TestSuite / "test_transform") do
-    local name = path:filename():string()
+for name, path in each_directory "test/JSONTestSuite/test_transform" do
     if name:match "number_9223372036854775807" then
         transform[name] = test_impl(path)
     else
