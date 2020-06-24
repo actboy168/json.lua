@@ -1,4 +1,6 @@
 # json.lua
+![Build Status](https://github.com/actboy168/json.lua/workflows/test/badge.svg)
+
 A pure-Lua JSON library.
 
 ## Usage
