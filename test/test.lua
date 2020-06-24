@@ -1,7 +1,6 @@
 local json = require "json"
 
 package.path = "test/?.lua"
-package.cpath = "test/?.dll"
 
 local lu = require "luaunit"
 local ERROR = ": ERROR: "
