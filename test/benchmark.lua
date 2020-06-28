@@ -15,7 +15,7 @@ end
 local dir = "test/nativejson-benchmark/data/"
 local lst = {}
 for file in io.lines(dir .. "data.txt") do
-    lst[#lst+1] = file
+    lst[#lst+1] = file:gsub("^[ \t\r\b]*(.-)[ \t\r\b]*$", "%1")
 end
 table.sort(lst)
 

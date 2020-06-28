@@ -2,8 +2,17 @@ local json = require "json"
 package.path = "test/?.lua"
 local lu = require "luaunit"
 
+local os_name = (function ()
+    if package.config:sub(1,1) == '\\' then
+        return os.getenv "OS"
+    end
+    return io.popen "uname -s":read "l"
+end)()
+
 local function each_directory(dir)
-    local command = "dir /B " .. dir:gsub("/", "\\")
+    local command = os_name == "Windows_NT"
+        and "dir /B " .. dir:gsub("/", "\\")
+        or "ls -1 " .. dir
     local lst = {}
     for file in io.popen(command):lines() do
         lst[#lst+1] = file
