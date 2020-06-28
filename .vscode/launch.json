@@ -10,7 +10,7 @@
             "console": "integratedTerminal",
             "outputCapture": [
             ],
-            "program": "test/test.lua",
+            "program": "test/conformance.lua",
             "arg": [
             ]
         },
@@ -23,7 +23,7 @@
             "console": "integratedTerminal",
             "outputCapture": [
             ],
-            "program": "test/bench.lua",
+            "program": "test/benchmark.lua",
         }
     ]
 }
