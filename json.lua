@@ -153,18 +153,6 @@ local statusTop
 local statusAry = {}
 local statusRef = {}
 
-local function get_word()
-    return string_match(statusBuf, "^[^ \t\r\n%]},]*", statusPos)
-end
-
-local function next_byte()
-    statusPos = string_find(statusBuf, "[^ \t\r\n]", statusPos)
-    if statusPos then
-        return string_byte(statusBuf, statusPos)
-    end
-    statusPos = #statusBuf + 1
-end
-
 local function find_line(str, n)
     local line = 1
     local pos = 1
@@ -186,11 +174,17 @@ local function decode_error(msg)
     error(string_format("ERROR: %s at line %d col %d", msg, find_line(msg, statusPos)))
 end
 
-local function strchar(chr)
-    if chr then
-        return string_char(chr)
+local function get_word()
+    return string_match(statusBuf, "^[^ \t\r\n%]},]*", statusPos)
+end
+
+local function next_byte()
+    statusPos = string_find(statusBuf, "[^ \t\r\n]", statusPos)
+    if statusPos then
+        return string_byte(statusBuf, statusPos)
     end
-    return "<eol>"
+    statusPos = #statusBuf + 1
+    decode_error("unexpected character '<eol>'")
 end
 
 local function decode_unicode_surrogate(s1, s2)
@@ -230,7 +224,7 @@ local function decode_string()
             else
                 if not decode_escape_set[nx] then
                     statusPos = i
-                    decode_error("invalid escape char '" .. strchar(nx) .. "' in string")
+                    decode_error("invalid escape char '" .. (nx and string_char(nx) or "<eol>") .. "' in string")
                 end
                 has_escape = true
                 i = i + 1
@@ -342,7 +336,7 @@ local function decode()
     local chr = next_byte()
     local f = decode_map[chr]
     if not f then
-        decode_error("unexpected character '" .. strchar(chr) .. "'")
+        decode_error("unexpected character '" .. string_char(chr) .. "'")
     end
     return f()
 end
@@ -353,8 +347,7 @@ local function decode_item()
     if statusAry[top] then
         ref[#ref+1] = decode()
     else
-        local chr = next_byte()
-        if chr ~= 34 --[[ '"' ]] then
+        if next_byte() ~= 34 --[[ '"' ]] then
             decode_error "expected string for key"
         end
         local key = decode_string()
@@ -398,7 +391,7 @@ function json.decode(str)
     while statusTop > 0 do
         decode_item()
     end
-    if next_byte() ~= nil then
+    if string_find(statusBuf, "[^ \t\r\n]", statusPos) then
         decode_error "trailing garbage"
     end
     return res
