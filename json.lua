@@ -9,6 +9,11 @@ local table_concat = table.concat
 local table_sort = table.sort
 local string_char = string.char
 local string_byte = string.byte
+local string_find = string.find
+local string_match = string.match
+local string_gsub = string.gsub
+local string_sub = string.sub
+local string_format = string.format
 local math_type = math.type
 local setmetatable = setmetatable
 local Inf = math.huge
@@ -42,7 +47,7 @@ end
 for i = 0, 31 do
     local c = string_char(i)
     if not decode_escape_map[c] then
-        encode_escape_map[c] = ("\\u%04x"):format(i)
+        encode_escape_map[c] = string_format("\\u%04x", i)
     end
 end
 
@@ -58,22 +63,22 @@ local function encode_null(val)
 end
 
 local function encode_string(val)
-    return '"' .. val:gsub('[\0-\31\\"/]', encode_escape_map) .. '"'
+    return '"' .. string_gsub(val, '[\0-\31\\"/]', encode_escape_map) .. '"'
 end
 
 local function convertreal(v)
-    local g = ('%.16g'):format(v)
+    local g = string_format('%.16g', v)
     if tonumber(g) == v then
         return g
     end
-    return ('%.17g'):format(v)
+    return string_format('%.17g', v)
 end
 
 local function encode_number(val)
     if val ~= val or val <= -Inf or val >= Inf then
         error("unexpected number value '" .. tostring(val) .. "'")
     end
-    return convertreal(val):gsub(',', '.')
+    return string_gsub(convertreal(val), ',', '.')
 end
 
 local function encode_table(val, mark)
@@ -149,11 +154,11 @@ local statusAry = {}
 local statusRef = {}
 
 local function get_word()
-    return statusBuf:match("^[^ \t\r\n%]},]*", statusPos)
+    return string_match(statusBuf, "^[^ \t\r\n%]},]*", statusPos)
 end
 
 local function next_byte()
-    statusPos = statusBuf:find("[^ \t\r\n]", statusPos)
+    statusPos = string_find(statusBuf, "[^ \t\r\n]", statusPos)
     if statusPos then
         return string_byte(statusBuf, statusPos)
     end
@@ -164,7 +169,7 @@ local function find_line(str, n)
     local line = 1
     local pos = 1
     while true do
-        local f, _, nl1, nl2 = str:find('([\n\r])([\n\r]?)', pos)
+        local f, _, nl1, nl2 = string_find(str, '([\n\r])([\n\r]?)', pos)
         if not f then
             return line, n - pos + 1
         end
@@ -178,7 +183,7 @@ local function find_line(str, n)
 end
 
 local function decode_error(msg)
-    error(("ERROR: %s at line %d col %d"):format(msg, find_line(msg, statusPos)))
+    error(string_format("ERROR: %s at line %d col %d", msg, find_line(msg, statusPos)))
 end
 
 local function strchar(chr)
@@ -204,7 +209,7 @@ local function decode_string()
     local has_escape = false
     local i = statusPos
     while true do
-        i = statusBuf:find('[\0-\31\\"]', i + 1)
+        i = string_find(statusBuf, '[\0-\31\\"]', i + 1)
         if not i then
             decode_error "expected closing quote for string"
         end
@@ -216,7 +221,7 @@ local function decode_string()
         if x == 92 --[[ "\\" ]] then
             local nx = string_byte(statusBuf, i+1)
             if nx == 117 --[[ "u" ]] then
-                if not statusBuf:match("^%x%x%x%x", i+2) then
+                if not string_match(statusBuf, "^%x%x%x%x", i+2) then
                     statusPos = i
                     decode_error "invalid unicode escape in string"
                 end
@@ -231,13 +236,13 @@ local function decode_string()
                 i = i + 1
             end
         elseif x == 34 --[[ '"' ]] then
-            local s = statusBuf:sub(statusPos + 1, i - 1)
+            local s = string_sub(statusBuf, statusPos + 1, i - 1)
             if has_unicode_escape then
-                s = s:gsub("\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", decode_unicode_surrogate)
-                     :gsub("\\u(%x%x%x%x)", decode_unicode_escape)
+                s = string_gsub(string_gsub(s, "\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", decode_unicode_surrogate)
+                    , "\\u(%x%x%x%x)", decode_unicode_escape)
             end
             if has_escape then
-                s = s:gsub("\\.", decode_escape_map)
+                s = string_gsub(s, "\\.", decode_escape_map)
             end
             statusPos = i + 1
             return s
@@ -248,14 +253,14 @@ end
 local function decode_number()
     local word = get_word()
     if not (
-       word:match '^-?[1-9][0-9]*$'
-    or word:match '^-?[1-9][0-9]*[Ee][+-]?[0-9]+$'
-    or word:match '^-?[1-9][0-9]*%.[0-9]+$'
-    or word:match '^-?[1-9][0-9]*%.[0-9]+[Ee][+-]?[0-9]+$'
-    or word:match '^-?0$'
-    or word:match '^-?0[Ee][+-]?[0-9]+$'
-    or word:match '^-?0%.[0-9]+$'
-    or word:match '^-?0%.[0-9]+[Ee][+-]?[0-9]+$'
+       string_match(word, '^-?[1-9][0-9]*$')
+    or string_match(word, '^-?[1-9][0-9]*[Ee][+-]?[0-9]+$')
+    or string_match(word, '^-?[1-9][0-9]*%.[0-9]+$')
+    or string_match(word, '^-?[1-9][0-9]*%.[0-9]+[Ee][+-]?[0-9]+$')
+    or string_match(word, '^-?0$')
+    or string_match(word, '^-?0[Ee][+-]?[0-9]+$')
+    or string_match(word, '^-?0%.[0-9]+$')
+    or string_match(word, '^-?0%.[0-9]+[Ee][+-]?[0-9]+$')
     ) then
         decode_error("invalid number '" .. word .. "'")
     end
@@ -264,7 +269,7 @@ local function decode_number()
 end
 
 local function decode_true()
-    if statusBuf:sub(statusPos, statusPos+3) ~= "true" then
+    if string_sub(statusBuf, statusPos, statusPos+3) ~= "true" then
         decode_error("invalid literal '" .. get_word() .. "'")
     end
     statusPos = statusPos + 4
@@ -272,7 +277,7 @@ local function decode_true()
 end
 
 local function decode_false()
-    if statusBuf:sub(statusPos, statusPos+4) ~= "false" then
+    if string_sub(statusBuf, statusPos, statusPos+4) ~= "false" then
         decode_error("invalid literal '" .. get_word() .. "'")
     end
     statusPos = statusPos + 5
@@ -280,7 +285,7 @@ local function decode_false()
 end
 
 local function decode_null()
-    if statusBuf:sub(statusPos, statusPos+3) ~= "null" then
+    if string_sub(statusBuf, statusPos, statusPos+3) ~= "null" then
         decode_error("invalid literal '" .. get_word() .. "'")
     end
     statusPos = statusPos + 4
