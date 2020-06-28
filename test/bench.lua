@@ -1,4 +1,6 @@
 local json = require "json"
+package.path = "test/?.lua"
+local lu = require "luaunit"
 
 local function readfile(path)
     local f = assert(io.open(path, "rb"))
@@ -13,15 +15,17 @@ end
 local dir = "test/nativejson-benchmark/data/"
 local lst = {}
 for file in io.lines(dir .. "data.txt") do
-    lst[#lst+1] = readfile(dir .. file)
+    lst[#lst+1] = file
 end
 table.sort(lst)
-collectgarbage "collect"
 
+local benchmark = lu.test "benchmark"
 local res = {}
-local ti = os.clock()
-for i = 1, #lst do
-    res[i] = json.decode(lst[i])
+for i, file in ipairs(lst) do
+    local data = readfile(dir .. file)
+    benchmark[file] = function()
+        res[i] = json.decode(data)
+    end
 end
-ti = os.clock() - ti
-print("Ran "..#lst.." tests in "..ti.." seconds")
+
+os.exit(lu.run(), true)

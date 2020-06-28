@@ -1,9 +1,6 @@
 local json = require "json"
-
 package.path = "test/?.lua"
-
 local lu = require "luaunit"
-local ERROR = ": ERROR: "
 
 local function each_directory(dir)
     local command = "dir /B " .. dir:gsub("/", "\\")
@@ -40,6 +37,7 @@ local function test_yes(path)
     end
 end
 
+local ERROR = ": ERROR: "
 local function test_no(path)
     return function()
         local ok, msg = pcall(json.decode, readfile(path))
@@ -81,4 +79,4 @@ for name, path in each_directory "test/JSONTestSuite/test_transform" do
     end
 end
 
-lu.run()
+os.exit(lu.run(), true)
