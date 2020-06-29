@@ -188,13 +188,13 @@ local function next_byte()
 end
 
 local function decode_unicode_surrogate(s1, s2)
-    local n1 = tonumber(s1,  16)
+    local n1 = tonumber(s1, 16)
     local n2 = tonumber(s2, 16)
     return utf8_char(0x10000 + (n1 - 0xd800) * 0x400 + (n2 - 0xdc00))
 end
 
 local function decode_unicode_escape(s)
-    local n1 = tonumber(s,  16)
+    local n1 = tonumber(s, 16)
     return utf8_char(n1)
 end
 
@@ -203,7 +203,7 @@ local function decode_string()
     local has_escape = false
     local i = statusPos
     while true do
-        i = string_find(statusBuf, '[\0-\31\\"]', i + 1)
+        i = string_find(statusBuf, '["\\\0-\31]', i + 1)
         if not i then
             decode_error "expected closing quote for string"
         end
@@ -232,7 +232,8 @@ local function decode_string()
         elseif x == 34 --[[ '"' ]] then
             local s = string_sub(statusBuf, statusPos + 1, i - 1)
             if has_unicode_escape then
-                s = string_gsub(string_gsub(s, "\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", decode_unicode_surrogate)
+                s = string_gsub(string_gsub(s
+                    , "\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", decode_unicode_surrogate)
                     , "\\u(%x%x%x%x)", decode_unicode_escape)
             end
             if has_escape then
@@ -247,14 +248,42 @@ end
 local function decode_number()
     local word = get_word()
     if not (
-       string_match(word, '^-?[1-9][0-9]*$')
-    or string_match(word, '^-?[1-9][0-9]*[Ee][+-]?[0-9]+$')
-    or string_match(word, '^-?[1-9][0-9]*%.[0-9]+$')
-    or string_match(word, '^-?[1-9][0-9]*%.[0-9]+[Ee][+-]?[0-9]+$')
-    or string_match(word, '^-?0$')
-    or string_match(word, '^-?0[Ee][+-]?[0-9]+$')
-    or string_match(word, '^-?0%.[0-9]+$')
-    or string_match(word, '^-?0%.[0-9]+[Ee][+-]?[0-9]+$')
+        string_match(word, '^.[0-9]*$')
+     or string_match(word, '^.[0-9]*%.[0-9]+$')
+     or string_match(word, '^.[0-9]*[Ee][+-]?[0-9]+$')
+     or string_match(word, '^.[0-9]*%.[0-9]+[Ee][+-]?[0-9]+$')
+    ) then
+        decode_error("invalid number '" .. word .. "'")
+    end
+    statusPos = statusPos + #word
+    return tonumber(word)
+end
+
+local function decode_number_negative()
+    local word = get_word()
+    if not (
+        string_match(word, '^.[1-9][0-9]*$')
+     or string_match(word, '^.[1-9][0-9]*%.[0-9]+$')
+     or string_match(word, '^.[1-9][0-9]*[Ee][+-]?[0-9]+$')
+     or string_match(word, '^.[1-9][0-9]*%.[0-9]+[Ee][+-]?[0-9]+$')
+     or word == "-0"
+     or string_match(word, '^.0%.[0-9]+$')
+     or string_match(word, '^.0[Ee][+-]?[0-9]+$')
+     or string_match(word, '^.0%.[0-9]+[Ee][+-]?[0-9]+$')
+    ) then
+        decode_error("invalid number '" .. word .. "'")
+    end
+    statusPos = statusPos + #word
+    return tonumber(word)
+end
+
+local function decode_number_zero()
+    local word = get_word()
+    if not (
+        #word == 1
+     or string_match(word, '^.%.[0-9]+$')
+     or string_match(word, '^.[Ee][+-]?[0-9]+$')
+     or string_match(word, '^.%.[0-9]+[Ee][+-]?[0-9]+$')
     ) then
         decode_error("invalid number '" .. word .. "'")
     end
@@ -312,9 +341,9 @@ local function decode_object()
     return res
 end
 
-local decode_map = {
+local decode_uncompleted_map = {
     [ string_byte '"' ] = decode_string,
-    [ string_byte "0" ] = decode_number,
+    [ string_byte "0" ] = decode_number_zero,
     [ string_byte "1" ] = decode_number,
     [ string_byte "2" ] = decode_number,
     [ string_byte "3" ] = decode_number,
@@ -324,21 +353,24 @@ local decode_map = {
     [ string_byte "7" ] = decode_number,
     [ string_byte "8" ] = decode_number,
     [ string_byte "9" ] = decode_number,
-    [ string_byte "-" ] = decode_number,
+    [ string_byte "-" ] = decode_number_negative,
     [ string_byte "t" ] = decode_true,
     [ string_byte "f" ] = decode_false,
     [ string_byte "n" ] = decode_null,
     [ string_byte "[" ] = decode_array,
     [ string_byte "{" ] = decode_object,
 }
+local function unexpected_character()
+    decode_error("unexpected character '" .. string_sub(statusBuf, statusPos, statusPos) .. "'")
+end
+
+local decode_map = {}
+for i = 0, 255 do
+    decode_map[i] = decode_uncompleted_map[i] or unexpected_character
+end
 
 local function decode()
-    local chr = next_byte()
-    local f = decode_map[chr]
-    if not f then
-        decode_error("unexpected character '" .. string_char(chr) .. "'")
-    end
-    return f()
+    return decode_map[next_byte()]()
 end
 
 local function decode_item()
