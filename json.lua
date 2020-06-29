@@ -132,15 +132,12 @@ local encode_map = {
     [ "number"   ] = encode_number,
     [ "boolean"  ] = tostring,
     [ "function" ] = encode_null,
+    [ "userdata" ] = function () error("unexpected type 'userdata'") end,
+    [ "thread"   ] = function () error("unexpected type 'thread'") end,
 }
 
 encode = function(val, mark)
-    local t = type(val)
-    local f = encode_map[t]
-    if f then
-        return f(val, mark)
-    end
-    error("unexpected type '" .. t .. "'")
+    return encode_map[type(val)](val, mark)
 end
 
 json.encode = encode
@@ -188,14 +185,11 @@ local function next_byte()
 end
 
 local function decode_unicode_surrogate(s1, s2)
-    local n1 = tonumber(s1, 16)
-    local n2 = tonumber(s2, 16)
-    return utf8_char(0x10000 + (n1 - 0xd800) * 0x400 + (n2 - 0xdc00))
+    return utf8_char(0x10000 + (tonumber(s1, 16) - 0xd800) * 0x400 + (tonumber(s2, 16) - 0xdc00))
 end
 
 local function decode_unicode_escape(s)
-    local n1 = tonumber(s, 16)
-    return utf8_char(n1)
+    return utf8_char(tonumber(s, 16))
 end
 
 local function decode_string()
