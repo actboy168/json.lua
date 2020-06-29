@@ -7,7 +7,7 @@ jobs:
     - uses: actions/checkout@v1
       with:
         ref: refs/heads/master
-        submodules : recursive
+        submodules: true
     - uses: xpol/setup-lua@master
       with:
         lua-version: "5.3.5"
