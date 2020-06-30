@@ -1,6 +1,12 @@
+package.path = table.concat({
+    "?.lua",
+    "test/ltest/?.lua",
+}, ";")
+
+local lt = require "ltest"
+lt.include_module "json"
+
 local json = require "json"
-package.path = "test/?.lua"
-local lu = require "luaunit"
 
 local os_name = (function ()
     if package.config:sub(1,1) == '\\' then
@@ -42,7 +48,7 @@ end
 local function test_yes(path)
     return function()
         local res = json.decode(readfile(path))
-        lu.assertEquals(json.decode(json.encode(res)), res)
+        lt.assertEquals(json.decode(json.encode(res)), res)
     end
 end
 
@@ -50,8 +56,8 @@ local ERROR = ": ERROR: "
 local function test_no(path)
     return function()
         local ok, msg = pcall(json.decode, readfile(path))
-        lu.assertEquals(ok, false)
-        lu.assertEquals(msg:match(ERROR), ERROR)
+        lt.assertEquals(ok, false)
+        lt.assertEquals(msg:match(ERROR), ERROR)
     end
 end
 
@@ -61,7 +67,7 @@ local function test_impl(path)
     end
 end
 
-local parsing = lu.test "parsing"
+local parsing = lt.test "parsing"
 for name, path in each_directory "test/JSONTestSuite/test_parsing" do
     local type = name:sub(1,1)
     if type == "y" then
@@ -79,7 +85,7 @@ for name, path in each_directory "test/JSONTestSuite/test_parsing" do
     end
 end
 
-local transform = lu.test "transform"
+local transform = lt.test "transform"
 for name, path in each_directory "test/JSONTestSuite/test_transform" do
     if name:match "number_9223372036854775807" then
         transform[name] = test_impl(path)
@@ -88,4 +94,4 @@ for name, path in each_directory "test/JSONTestSuite/test_transform" do
     end
 end
 
-os.exit(lu.run(), true)
+os.exit(lt.run(), true)

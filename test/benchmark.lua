@@ -1,6 +1,10 @@
+package.path = table.concat({
+    "?.lua",
+    "test/ltest/?.lua",
+}, ";")
+
+local lt = require "ltest"
 local json = require "json"
-package.path = "test/?.lua"
-local lu = require "luaunit"
 
 local function readfile(path)
     local f = assert(io.open(path, "rb"))
@@ -19,7 +23,7 @@ for file in io.lines(dir .. "data.txt") do
 end
 table.sort(lst)
 
-local benchmark = lu.test "benchmark"
+local benchmark = lt.test "benchmark"
 local res = {}
 for i, file in ipairs(lst) do
     local data = readfile(dir .. file)
@@ -28,4 +32,4 @@ for i, file in ipairs(lst) do
     end
 end
 
-os.exit(lu.run(), true)
+os.exit(lt.run(), true)

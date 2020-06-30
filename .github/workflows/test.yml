@@ -11,5 +11,5 @@ jobs:
     - uses: xpol/setup-lua@master
       with:
         lua-version: "5.3.5"
-    - run: lua test/conformance.lua
+    - run: lua test/conformance.lua -c
     - run: lua test/benchmark.lua

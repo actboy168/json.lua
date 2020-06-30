@@ -1,6 +1,7 @@
 local m = {}
 
 local inspect = require "inspect"
+local coverage = require "coverage"
 
 local function split(str)
     local r = {}
@@ -130,6 +131,8 @@ local function parseCmdLine(cmdLine)
                 result.verbosity = true
             elseif cmdArg == '--shuffle' or cmdArg == '-s' then
                 result.shuffle = true
+            elseif cmdArg == '--coverage' or cmdArg == '-c' then
+                result.coverage = true
             else
                 error('Unknown option: '..cmdArg)
             end
@@ -139,12 +142,13 @@ local function parseCmdLine(cmdLine)
     end
     return result
 end
+local options = parseCmdLine(rawget(_G, "arg") or {})
 
 local function errorHandler(e)
     return { msg = e, trace = string.sub(debug.traceback("", 3), 2) }
 end
 
-local function execFunction(options, failures, name, classInstance, methodInstance)
+local function execFunction(failures, name, classInstance, methodInstance)
     if options.verbosity then
         io.stdout:write("    ", name, " ... ")
         io.stdout:flush()
@@ -182,7 +186,8 @@ local function matchPattern(expr, patterns)
     end
 end
 
-local function selectList(patterns, lst)
+local function selectList(lst)
+    local patterns = options
     if #patterns == 0 then
         return lst
     end
@@ -240,7 +245,6 @@ function m.test(name)
 end
 
 function m.run()
-    local options = parseCmdLine(rawget(_G, "arg") or {})
     local lst = {}
     for _, name in ipairs(instanceSet) do
         local instance = instanceSet[name]
@@ -251,7 +255,7 @@ function m.run()
     if options.shuffle then
         randomizeTable(lst)
     end
-    local selected = selectList(options, lst)
+    local selected = selectList(lst)
     if options.verbosity then
         print('Started on '.. os.date())
     end
@@ -260,9 +264,12 @@ function m.run()
     local startTime = os.clock()
     for _, v in ipairs(selected) do
         local name, instance, methodInstance = v[1], v[2], v[3]
-        execFunction(options, failures, name, instance, methodInstance)
+        execFunction(failures, name, instance, methodInstance)
     end
     local duration = os.clock() - startTime
+    if options.coverage then
+        coverage.stop()
+    end
     if options.verbosity then
         print("=========================================================")
     else
@@ -278,9 +285,10 @@ function m.run()
             print()
         end
     end
-    local s = {
-        string.format('Ran %d tests in %0.3f seconds, %d successes, %d failures', #selected, duration, #selected - #failures, #failures),
-    }
+    if options.coverage then
+        print(coverage.result())
+    end
+    local s = {string.format('Ran %d tests in %0.3f seconds, %d successes, %d failures', #selected, duration, #selected - #failures, #failures)}
     local nonSelectedCount = #lst - #selected
     if nonSelectedCount > 0 then
         s[#s+1] = string.format("%d non-selected", nonSelectedCount)
@@ -290,6 +298,17 @@ function m.run()
         print('OK')
     end
     return #failures == 0
+end
+
+function m.include_module(name)
+    local path = assert(package.searchpath(name, package.path))
+    local f = assert(loadfile(path))
+    local source = debug.getinfo(f, "S").source
+    coverage.include(source, ("module `%s`"):format(name))
+end
+
+if options.coverage then
+    coverage.start()
 end
 
 return m
