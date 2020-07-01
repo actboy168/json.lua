@@ -1,8 +1,54 @@
-local m = {}
-
-local parser = require 'parser'
+local debug_getinfo = debug.getinfo
+local undump = require 'undump'
 local include = {}
-local data = {}
+
+local function calc_actives_54(proto, actives)
+    local n = proto.linedefined
+    local abs = {}
+    for _, line in ipairs(proto.abslineinfo) do
+        abs[line.pc] = line.line
+    end
+    for i, line in ipairs(proto.lineinfo) do
+        if line == -128 then
+            n = assert(abs[i-1])
+        else
+            n = n + line
+        end
+        actives[n] = true
+    end
+    for i = 1, proto.sizep do
+        calc_actives_54(proto.p[i], actives)
+    end
+end
+
+local function calc_actives_53(proto, actives)
+    for _, line in ipairs(proto.lineinfo) do
+        actives[line] = true
+    end
+    for i = 1, proto.sizep do
+        calc_actives_53(proto.p[i], actives)
+    end
+end
+
+local function get_actives(source)
+    local prefix = source:sub(1,1)
+    if prefix == "=" then
+        return {}
+    end
+    if prefix == "@" then
+        local f = assert(io.open(source:sub(2)))
+        source = f:read "a"
+        f:close()
+    end
+    local cl, version = undump(string.dump(assert(load(source))))
+    local actives = {}
+    if version >= 504 then
+        calc_actives_54(cl.f, actives)
+    else
+        calc_actives_53(cl.f, actives)
+    end
+    return actives
+end
 
 local function sortpairs(t)
     local sort = {}
@@ -22,16 +68,20 @@ local function sortpairs(t)
 end
 
 local function debug_hook(_, lineno)
-    local source = debug.getinfo(2, "S").source
-    if not include[source] then
-        return
+    local file = include[debug_getinfo(2, "S").source]
+    if file then
+        file[lineno] = true
     end
-    data[source][lineno] = true
 end
 
+local m = {}
+
 function m.include(source, name)
-    include[source] = name
-    data[source] = data[source] or {}
+    if include[source] then
+        include[source].name = name
+    else
+        include[source] = { name = name }
+    end
 end
 
 function m.start(co)
@@ -48,8 +98,8 @@ end
 
 function m.result()
     local str = {}
-    for source, file in sortpairs(data) do
-        local actives = parser(source)
+    for source, file in sortpairs(include) do
+        local actives = get_actives(source)
         local max = 0
         for i in pairs(actives) do
             if i > max then max = i end
@@ -69,7 +119,7 @@ function m.result()
                 status[#status+1] = "X"
             end
         end
-        str[#str+1] = string.format("coverage: %02.02f%% %s", pass/total*100, include[source])
+        str[#str+1] = string.format("coverage: %02.02f%% (%d/%d) %s", pass/total*100, pass, total, include[source])
         str[#str+1] = table.concat(status)
     end
     return table.concat(str, "\n")

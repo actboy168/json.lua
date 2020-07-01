@@ -300,7 +300,7 @@ function m.run()
     return #failures == 0
 end
 
-function m.include_module(name)
+function m.moduleCoverage(name)
     local path = assert(package.searchpath(name, package.path))
     local f = assert(loadfile(path))
     local source = debug.getinfo(f, "S").source

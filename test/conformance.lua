@@ -4,7 +4,7 @@ package.path = table.concat({
 }, ";")
 
 local lt = require "ltest"
-lt.include_module "json"
+lt.moduleCoverage "json"
 
 local json = require "json"
 
