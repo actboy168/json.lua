@@ -119,7 +119,7 @@ function m.result()
                 status[#status+1] = "X"
             end
         end
-        str[#str+1] = string.format("coverage: %02.02f%% (%d/%d) %s", pass/total*100, pass, total, include[source])
+        str[#str+1] = string.format("coverage: %02.02f%% (%d/%d) %s", pass/total*100, pass, total, file.name)
         str[#str+1] = table.concat(status)
     end
     return table.concat(str, "\n")
