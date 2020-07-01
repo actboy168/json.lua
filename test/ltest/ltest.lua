@@ -288,12 +288,12 @@ function m.run()
     if options.coverage then
         print(coverage.result())
     end
-    local s = {string.format('Ran %d tests in %0.3f seconds, %d successes, %d failures', #selected, duration, #selected - #failures, #failures)}
+    local s = string.format('Ran %d tests in %0.3f seconds, %d successes, %d failures', #selected, duration, #selected - #failures, #failures)
     local nonSelectedCount = #lst - #selected
     if nonSelectedCount > 0 then
-        s[#s+1] = string.format("%d non-selected", nonSelectedCount)
+        s = s .. string.format(", %d non-selected", nonSelectedCount)
     end
-    print(table.concat(s, ', '))
+    print(s)
     if #failures == 0 then
         print('OK')
     end
