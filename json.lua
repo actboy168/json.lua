@@ -91,7 +91,9 @@ local function encode_table(val, mark)
         end
     end
     mark = mark or {}
-    if mark[val] then error("circular reference") end
+    if mark[val] then
+        error("circular reference")
+    end
     mark[val] = true
     local res = {}
     if type(first_val) == 'string' then
@@ -390,13 +392,9 @@ local function decode_item()
                 return
             end
             if statusAry[statusTop] then
-                if chr ~= 93 --[[ "]" ]] then
-                    decode_error "expected ']' or ','"
-                end
+                if chr ~= 93 --[[ "]" ]] then decode_error "expected ']' or ','" end
             else
-                if chr ~= 125 --[[ "}" ]] then
-                    decode_error "expected '}' or ','"
-                end
+                if chr ~= 125 --[[ "}" ]] then decode_error "expected '}' or ','" end
             end
             statusTop = statusTop - 1
         until statusTop == 0

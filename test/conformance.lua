@@ -94,4 +94,36 @@ for name, path in each_directory "test/JSONTestSuite/test_transform" do
     end
 end
 
+local other = lt.test "other"
+function other.encode()
+    lt.assertEquals(json.encode {nil,1}, "[null,1]")
+    lt.assertEquals(json.encode(0.12345678901234566), "0.12345678901234566")
+    lt.assertError(json.encode, function() end)
+    lt.assertError(json.encode, math.huge)
+    do
+        local t = {}; t[1] = t
+        lt.assertError(json.encode, t)
+    end
+
+    do
+        local t = {1,a=1}
+        lt.assertEquals(next(t), 1)
+        lt.assertError(json.encode, t)
+    end
+
+    do
+        local t = {[true]=true}
+        local i = 1
+        repeat
+            t[tostring(i)] = true
+            i = i + 1
+        until type(next(t)) == "string"
+        lt.assertError(json.encode, t)
+    end
+end
+
+function other.decode()
+    lt.assertError(json.decode, 1)
+end
+
 os.exit(lt.run(), true)
