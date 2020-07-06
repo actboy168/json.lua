@@ -384,7 +384,7 @@ local function decode_item()
         ref[key] = decode()
     end
     if top == statusTop then
-        while true do
+        repeat
             local chr = next_byte(); statusPos = statusPos + 1
             if chr == 44 --[[ "," ]] then
                 return
@@ -399,10 +399,7 @@ local function decode_item()
                 end
             end
             statusTop = statusTop - 1
-            if statusTop == 0 then
-                return
-            end
-        end
+        until statusTop == 0
     end
 end
 

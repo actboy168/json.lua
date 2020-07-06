@@ -107,6 +107,7 @@ function m.result()
         local total = 0
         local pass = 0
         local status = {}
+        local lines = {}
         for i = 1, max do
             if not actives[i] then
                 status[#status+1] = "."
@@ -117,9 +118,11 @@ function m.result()
             else
                 total = total + 1
                 status[#status+1] = "X"
+                lines[#lines+1] = tostring(i)
             end
         end
         str[#str+1] = string.format("coverage: %02.02f%% (%d/%d) %s", pass/total*100, pass, total, file.name)
+        if #lines > 0 then str[#str+1] = table.concat(lines, " ") end
         str[#str+1] = table.concat(status)
     end
     return table.concat(str, "\n")
