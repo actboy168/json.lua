@@ -1,6 +1,6 @@
 local m = {}
 
-local inspect = require "inspect"
+local stringify = require "stringify"
 local coverage = require "coverage"
 
 local function split(str)
@@ -90,13 +90,13 @@ end
 
 function m.assertEquals(actual, expected)
     if not equals(actual, expected) then
-        failure("expected: %s, actual: %s", inspect(expected), inspect(actual))
+        failure("expected: %s, actual: %s", stringify(expected), stringify(actual))
     end
 end
 
 function m.assertNotEquals(actual, expected)
     if equals(actual, expected) then
-        failure('Received the not expected value: %s', inspect(actual))
+        failure('Received the not expected value: %s', stringify(actual))
     end
 end
 
@@ -109,7 +109,7 @@ end
 function m.assertErrorMsgEquals(expectedMsg, func, ...)
     local success, actualMsg = pcall(func, ...)
     if success then
-        failure('No error generated when calling function but expected error: %s', inspect(expectedMsg))
+        failure('No error generated when calling function but expected error: %s', stringify(expectedMsg))
     end
     equals(actualMsg, expectedMsg)
 end
@@ -118,7 +118,7 @@ for _, name in ipairs {'Nil', 'Number', 'String', 'Table', 'Boolean', 'Function'
     local typeExpected = name:lower()
     m["assertIs"..name] = function(value)
         if type(value) ~= typeExpected then
-            failure('expected: a %s value, actual: type %s, value %s', typeExpected, type(value), inspect(value))
+            failure('expected: a %s value, actual: type %s, value %s', typeExpected, type(value), stringify(value))
         end
     end
 end
@@ -164,7 +164,7 @@ local function execFunction(failures, name, classInstance, methodInstance)
         err.name = name
         err.trace = pretty_trace(name, err.trace)
         if type(err.msg) ~= 'string' then
-            err.msg = inspect(err.msg)
+            err.msg = stringify(err.msg)
         end
         failures[#failures+1] = err
         if options.verbosity then
