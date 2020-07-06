@@ -150,17 +150,17 @@ local statusTop
 local statusAry = {}
 local statusRef = {}
 
-local function find_line(str, n)
+local function find_line()
     local line = 1
     local pos = 1
     while true do
-        local f, _, nl1, nl2 = string_find(str, '([\n\r])([\n\r]?)', pos)
+        local f, _, nl1, nl2 = string_find(statusBuf, '([\n\r])([\n\r]?)', pos)
         if not f then
-            return line, n - pos + 1
+            return line, statusPos - pos + 1
         end
         local newpos = f + ((nl1 == nl2 or nl2 == '') and 1 or 2)
-        if newpos > n then
-            return line, n - pos + 1
+        if newpos > statusPos then
+            return line, statusPos - pos + 1
         end
         pos = newpos
         line = line + 1
@@ -168,7 +168,7 @@ local function find_line(str, n)
 end
 
 local function decode_error(msg)
-    error(string_format("ERROR: %s at line %d col %d", msg, find_line(msg, statusPos)))
+    error(string_format("ERROR: %s at line %d col %d", msg, find_line()))
 end
 
 local function get_word()
