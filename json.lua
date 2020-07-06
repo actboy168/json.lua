@@ -195,9 +195,9 @@ end
 local function decode_string()
     local has_unicode_escape = false
     local has_escape = false
-    local i = statusPos
+    local i = statusPos + 1
     while true do
-        i = string_find(statusBuf, '["\\\0-\31]', i + 1)
+        i = string_find(statusBuf, '["\\\0-\31]', i)
         if not i then
             decode_error "expected closing quote for string"
         end
@@ -206,24 +206,7 @@ local function decode_string()
             statusPos = i
             decode_error "control character in string"
         end
-        if x == 92 --[[ "\\" ]] then
-            local nx = string_byte(statusBuf, i+1)
-            if nx == 117 --[[ "u" ]] then
-                if not string_match(statusBuf, "^%x%x%x%x", i+2) then
-                    statusPos = i
-                    decode_error "invalid unicode escape in string"
-                end
-                has_unicode_escape = true
-                i = i + 5
-            else
-                if not decode_escape_set[nx] then
-                    statusPos = i
-                    decode_error("invalid escape char '" .. (nx and string_char(nx) or "<eol>") .. "' in string")
-                end
-                has_escape = true
-                i = i + 1
-            end
-        elseif x == 34 --[[ '"' ]] then
+        if x == 34 --[[ '"' ]] then
             local s = string_sub(statusBuf, statusPos + 1, i - 1)
             if has_unicode_escape then
                 s = string_gsub(string_gsub(s
@@ -235,6 +218,23 @@ local function decode_string()
             end
             statusPos = i + 1
             return s
+        end
+        --assert(x == 92 --[[ "\\" ]])
+        local nx = string_byte(statusBuf, i+1)
+        if nx == 117 --[[ "u" ]] then
+            if not string_match(statusBuf, "^%x%x%x%x", i+2) then
+                statusPos = i
+                decode_error "invalid unicode escape in string"
+            end
+            has_unicode_escape = true
+            i = i + 6
+        else
+            if not decode_escape_set[nx] then
+                statusPos = i
+                decode_error("invalid escape char '" .. (nx and string_char(nx) or "<eol>") .. "' in string")
+            end
+            has_escape = true
+            i = i + 2
         end
     end
 end
