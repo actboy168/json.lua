@@ -17,7 +17,7 @@ end)()
 
 local function each_directory(dir)
     local command = os_name == "Windows_NT"
-        and "dir /B " .. dir:gsub("/", "\\")
+        and "dir /B " .. dir:gsub("/", "\\") .. " 2>nul"
         or "ls -1 " .. dir
     local lst = {}
     for file in io.popen(command):lines() do
