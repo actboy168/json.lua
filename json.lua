@@ -55,13 +55,6 @@ local function encode_nil()
     return "null"
 end
 
-local function encode_null(val)
-    if val == json.null then
-        return "null"
-    end
-    error "cannot serialise function: type not supported"
-end
-
 local function encode_string(val)
     return '"' .. string_gsub(val, '[\0-\31\\"/]', encode_escape_map) .. '"'
 end
@@ -79,6 +72,10 @@ local function encode_number(val)
         error("unexpected number value '" .. tostring(val) .. "'")
     end
     return string_gsub(convertreal(val), ',', '.')
+end
+
+local function encode_boolean(val)
+    return val and "true" or "false"
 end
 
 local function encode_table(val, mark)
@@ -132,13 +129,16 @@ local encode_map = {
     [ "table"    ] = encode_table,
     [ "string"   ] = encode_string,
     [ "number"   ] = encode_number,
-    [ "boolean"  ] = tostring,
-    [ "function" ] = encode_null,
+    [ "boolean"  ] = encode_boolean,
+    [ "function" ] = function () error("unexpected type 'function'") end,
     [ "userdata" ] = function () error("unexpected type 'userdata'") end,
     [ "thread"   ] = function () error("unexpected type 'thread'") end,
 }
 
 encode = function(val, mark)
+    if val == json.null then
+        return "null"
+    end
     return encode_map[type(val)](val, mark)
 end
 
