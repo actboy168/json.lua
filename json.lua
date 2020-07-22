@@ -25,7 +25,7 @@ json.object = {}
 local statusMark
 local statusQue
 
-local encode
+local encode_map = {}
 
 local encode_escape_map = {
     [ "\"" ] = "\\\"",
@@ -52,13 +52,19 @@ for i = 0, 31 do
     end
 end
 
-local function encode_nil()
-    statusQue[#statusQue+1] = "null"
+local function encode(v)
+    local res = encode_map[type(v)](v)
+    statusQue[#statusQue+1] = res
 end
 
-local function encode_string(v)
-    statusQue[#statusQue+1] = '"' .. string_gsub(v, '[\0-\31\\"/]', encode_escape_map) .. '"'
+encode_map["nil"] = function ()
+    return "null"
 end
+
+function encode_map.string(v)
+    return '"' .. string_gsub(v, '[\0-\31\\"/]', encode_escape_map) .. '"'
+end
+local encode_string = encode_map.string
 
 local function convertreal(v)
     local g = string_format('%.16g', v)
@@ -68,30 +74,29 @@ local function convertreal(v)
     return string_format('%.17g', v)
 end
 
-local function encode_number(v)
+function encode_map.number(v)
     if v ~= v or v <= -Inf or v >= Inf then
         error("unexpected number value '" .. tostring(v) .. "'")
     end
-    statusQue[#statusQue+1] = string_gsub(convertreal(v), ',', '.')
+    return string_gsub(convertreal(v), ',', '.')
 end
 
-local function encode_boolean(v)
+function encode_map.boolean(v)
     if v then
-        statusQue[#statusQue+1] = "true"
+        return "true"
     else
-        statusQue[#statusQue+1] = "false"
+        return "false"
     end
 end
 
-local function encode_table(t)
+function encode_map.table(t)
     local first_val = next(t)
     if first_val == nil then
         if getmetatable(t) == json.object then
-            statusQue[#statusQue+1] = "{}"
+            return "{}"
         else
-            statusQue[#statusQue+1] = "[]"
+            return "[]"
         end
-        return
     end
     if statusMark[t] then
         error("circular reference")
@@ -108,17 +113,18 @@ local function encode_table(t)
         table_sort(key)
         statusQue[#statusQue+1] = "{"
         local k = key[1]
-        encode_string(k)
+        statusQue[#statusQue+1] = encode_string(k)
         statusQue[#statusQue+1] = ":"
         encode(t[k])
         for i = 2, #key do
             local k = key[i]
             statusQue[#statusQue+1] = ","
-            encode_string(k)
+            statusQue[#statusQue+1] = encode_string(k)
             statusQue[#statusQue+1] = ":"
             encode(t[k])
         end
-        statusQue[#statusQue+1] = "}"
+        statusMark[t] = nil
+        return "}"
     else
         local max = 0
         for k in next, t do
@@ -135,33 +141,21 @@ local function encode_table(t)
             statusQue[#statusQue+1] = ","
             encode(t[i])
         end
-        statusQue[#statusQue+1] = "]"
+        statusMark[t] = nil
+        return "]"
     end
-    statusMark[t] = nil
 end
 
 local function encode_unexpected(v)
     if v == json.null then
-        statusQue[#statusQue+1] = "null"
+        return "null"
     else
         error("unexpected type '"..type(v).."'")
     end
 end
-
-local encode_map = {
-    [ "nil"      ] = encode_nil,
-    [ "table"    ] = encode_table,
-    [ "string"   ] = encode_string,
-    [ "number"   ] = encode_number,
-    [ "boolean"  ] = encode_boolean,
-    [ "function" ] = encode_unexpected,
-    [ "userdata" ] = encode_unexpected,
-    [ "thread"   ] = encode_unexpected,
-}
-
-encode = function(v)
-    encode_map[type(v)](v)
-end
+encode_map[ "function" ] = encode_unexpected
+encode_map[ "userdata" ] = encode_unexpected
+encode_map[ "thread"   ] = encode_unexpected
 
 function json.encode(v)
     statusMark = {}
@@ -169,6 +163,8 @@ function json.encode(v)
     encode(v)
     return table_concat(statusQue)
 end
+
+json.encode_map = encode_map
 
 -- json.decode --
 
