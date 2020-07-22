@@ -139,29 +139,33 @@ local function encode_table(t)
     statusMark[t] = nil
 end
 
+local function encode_unexpected(v)
+    if v == json.null then
+        statusQue[#statusQue+1] = "null"
+    else
+        error("unexpected type '"..type(v).."'")
+    end
+end
+
 local encode_map = {
     [ "nil"      ] = encode_nil,
     [ "table"    ] = encode_table,
     [ "string"   ] = encode_string,
     [ "number"   ] = encode_number,
     [ "boolean"  ] = encode_boolean,
-    [ "function" ] = function () error("unexpected type 'function'") end,
-    [ "userdata" ] = function () error("unexpected type 'userdata'") end,
-    [ "thread"   ] = function () error("unexpected type 'thread'") end,
+    [ "function" ] = encode_unexpected,
+    [ "userdata" ] = encode_unexpected,
+    [ "thread"   ] = encode_unexpected,
 }
 
-encode = function(val)
-    if val == json.null then
-        statusQue[#statusQue+1] = "null"
-    else
-        encode_map[type(val)](val)
-    end
+encode = function(v)
+    encode_map[type(v)](v)
 end
 
-function json.encode(val)
+function json.encode(v)
     statusMark = {}
     statusQue = {}
-    encode(val)
+    encode(v)
     return table_concat(statusQue)
 end
 
