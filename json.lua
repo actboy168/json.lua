@@ -18,7 +18,6 @@ local setmetatable = setmetatable
 local Inf = math.huge
 
 local json = {}
-json.null = function() end
 json.object = {}
 
 -- json.encode --
@@ -433,5 +432,8 @@ function json.decode(str)
     end
     return res
 end
+
+-- Generate a lightuserdata
+json.null = debug.upvalueid(decode, 1)
 
 return json
