@@ -15,6 +15,7 @@ local string_sub = string.sub
 local string_format = string.format
 local math_type = math.type
 local setmetatable = setmetatable
+local getmetatable = getmetatable
 local Inf = math.huge
 
 local json = {}
