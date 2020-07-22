@@ -23,6 +23,7 @@ json.null = function() end
 json.object = {}
 
 -- json.encode --
+local encodeMark
 
 local encode
 
@@ -78,7 +79,7 @@ local function encode_boolean(val)
     return val and "true" or "false"
 end
 
-local function encode_table(val, mark)
+local function encode_table(val)
     local first_val = next(val)
     if first_val == nil then
         if getmetatable(val) == json.object then
@@ -87,11 +88,10 @@ local function encode_table(val, mark)
             return "[]"
         end
     end
-    mark = mark or {}
-    if mark[val] then
+    if encodeMark[val] then
         error("circular reference")
     end
-    mark[val] = true
+    encodeMark[val] = true
     local res = {}
     if type(first_val) == 'string' then
         local key = {}
@@ -104,9 +104,9 @@ local function encode_table(val, mark)
         table_sort(key)
         for i = 1, #key do
             local k = key[i]
-            res[i] = encode_string(k) .. ":" .. encode(val[k], mark)
+            res[i] = encode_string(k) .. ":" .. encode(val[k])
         end
-        mark[val] = nil
+        encodeMark[val] = nil
         return "{" .. table_concat(res, ",") .. "}"
     else
         local max = 0
@@ -117,9 +117,9 @@ local function encode_table(val, mark)
             max = max > k and max or k
         end
         for i = 1, max do
-            res[i] = encode(val[i], mark)
+            res[i] = encode(val[i])
         end
-        mark[val] = nil
+        encodeMark[val] = nil
         return "[" .. table_concat(res, ",") .. "]"
     end
 end
@@ -135,14 +135,17 @@ local encode_map = {
     [ "thread"   ] = function () error("unexpected type 'thread'") end,
 }
 
-encode = function(val, mark)
+encode = function(val)
     if val == json.null then
         return "null"
     end
-    return encode_map[type(val)](val, mark)
+    return encode_map[type(val)](val)
 end
 
-json.encode = encode
+function json.encode(val)
+    encodeMark = {}
+    return encode(val)
+end
 
 -- json.decode --
 

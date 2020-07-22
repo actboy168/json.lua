@@ -23,12 +23,20 @@ for file in io.lines(dir .. "data.txt") do
 end
 table.sort(lst)
 
-local benchmark = lt.test "benchmark"
-local res = {}
+local decode = lt.test "decode"
+local decode_res = {}
 for i, file in ipairs(lst) do
     local data = readfile(dir .. file)
-    benchmark[file] = function()
-        res[i] = json.decode(data)
+    decode[file] = function()
+        decode_res[i] = json.decode(data)
+    end
+end
+
+local encode = lt.test "encode"
+local encode_res = {}
+for i, file in ipairs(lst) do
+    encode[file] = function()
+        encode_res[i] = json.encode(decode_res[i])
     end
 end
 
