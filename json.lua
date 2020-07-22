@@ -47,7 +47,7 @@ end
 
 for i = 0, 31 do
     local c = string_char(i)
-    if not decode_escape_map[c] then
+    if not encode_escape_map[c] then
         encode_escape_map[c] = string_format("\\u%04x", i)
     end
 end
