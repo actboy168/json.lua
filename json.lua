@@ -75,7 +75,11 @@ local function encode_number(v)
 end
 
 local function encode_boolean(v)
-    statusQue[#statusQue+1] = v and "true" or "false"
+    if v then
+        statusQue[#statusQue+1] = "true"
+    else
+        statusQue[#statusQue+1] = "false"
+    end
 end
 
 local function encode_table(t)
@@ -120,7 +124,9 @@ local function encode_table(t)
             if math_type(k) ~= "integer" then
                 error("invalid table: mixed or invalid key types")
             end
-            max = max > k and max or k
+            if max < k then
+                max = k
+            end
         end
         statusQue[#statusQue+1] = "["
         encode(t[1])
