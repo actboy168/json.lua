@@ -212,6 +212,14 @@ local function next_byte()
     decode_error("unexpected character '<eol>'")
 end
 
+local function expect_byte(c)
+    local _, pos = string_find(statusBuf, c, statusPos)
+    if not pos then
+        decode_error(string_format("expected '%s'", string_sub(c, #c)))
+    end
+    statusPos = pos
+end
+
 local function decode_unicode_surrogate(s1, s2)
     return utf8_char(0x10000 + (tonumber(s1, 16) - 0xd800) * 0x400 + (tonumber(s2, 16) - 0xdc00))
 end
@@ -401,13 +409,9 @@ local function decode_item()
     if statusAry[top] then
         ref[#ref+1] = decode()
     else
-        if next_byte() ~= 34 --[[ '"' ]] then
-            decode_error "expected string for key"
-        end
+        expect_byte '^[ \t\r\n]*"'
         local key = decode_string()
-        if next_byte() ~= 58 --[[ ":" ]] then
-            decode_error "expected ':' after key"
-        end
+        expect_byte '^[ \t\r\n]*:'
         statusPos = statusPos + 1
         ref[key] = decode()
     end
