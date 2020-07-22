@@ -1,4 +1,3 @@
-local pairs = pairs
 local type = type
 local next = next
 local error = error
@@ -40,7 +39,7 @@ local encode_escape_map = {
 
 local decode_escape_set = {}
 local decode_escape_map = {}
-for k, v in pairs(encode_escape_map) do
+for k, v in next, encode_escape_map do
     decode_escape_map[v] = k
     decode_escape_set[string_byte(v, 2)] = true
 end
@@ -95,7 +94,7 @@ local function encode_table(val)
     local res = {}
     if type(first_val) == 'string' then
         local key = {}
-        for k in pairs(val) do
+        for k in next, val do
             if type(k) ~= "string" then
                 error("invalid table: mixed or invalid key types")
             end
@@ -110,7 +109,7 @@ local function encode_table(val)
         return "{" .. table_concat(res, ",") .. "}"
     else
         local max = 0
-        for k in pairs(val) do
+        for k in next, val do
             if math_type(k) ~= "integer" then
                 error("invalid table: mixed or invalid key types")
             end
