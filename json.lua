@@ -62,7 +62,7 @@ encode_map["nil"] = function ()
 end
 
 function encode_map.string(v)
-    return '"' .. string_gsub(v, '[\0-\31\\"/]', encode_escape_map) .. '"'
+    return '"' .. string_gsub(v, '[\0-\31\\"]', encode_escape_map) .. '"'
 end
 local encode_string = encode_map.string
 
