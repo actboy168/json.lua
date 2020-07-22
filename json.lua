@@ -121,7 +121,7 @@ local function encode_table(t)
     else
         local max = 0
         for k in next, t do
-            if math_type(k) ~= "integer" then
+            if math_type(k) ~= "integer" or k <= 0 then
                 error("invalid table: mixed or invalid key types")
             end
             if max < k then
