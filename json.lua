@@ -22,7 +22,8 @@ json.null = function() end
 json.object = {}
 
 -- json.encode --
-local encodeMark
+local statusMark
+local statusQue
 
 local encode
 
@@ -52,11 +53,11 @@ for i = 0, 31 do
 end
 
 local function encode_nil()
-    return "null"
+    statusQue[#statusQue+1] = "null"
 end
 
-local function encode_string(val)
-    return '"' .. string_gsub(val, '[\0-\31\\"/]', encode_escape_map) .. '"'
+local function encode_string(v)
+    statusQue[#statusQue+1] = '"' .. string_gsub(v, '[\0-\31\\"/]', encode_escape_map) .. '"'
 end
 
 local function convertreal(v)
@@ -67,60 +68,70 @@ local function convertreal(v)
     return string_format('%.17g', v)
 end
 
-local function encode_number(val)
-    if val ~= val or val <= -Inf or val >= Inf then
-        error("unexpected number value '" .. tostring(val) .. "'")
+local function encode_number(v)
+    if v ~= v or v <= -Inf or v >= Inf then
+        error("unexpected number value '" .. tostring(v) .. "'")
     end
-    return string_gsub(convertreal(val), ',', '.')
+    statusQue[#statusQue+1] = string_gsub(convertreal(v), ',', '.')
 end
 
-local function encode_boolean(val)
-    return val and "true" or "false"
+local function encode_boolean(v)
+    statusQue[#statusQue+1] = v and "true" or "false"
 end
 
-local function encode_table(val)
-    local first_val = next(val)
+local function encode_table(t)
+    local first_val = next(t)
     if first_val == nil then
-        if getmetatable(val) == json.object then
-            return "{}"
+        if getmetatable(t) == json.object then
+            statusQue[#statusQue+1] = "{}"
         else
-            return "[]"
+            statusQue[#statusQue+1] = "[]"
         end
+        return
     end
-    if encodeMark[val] then
+    if statusMark[t] then
         error("circular reference")
     end
-    encodeMark[val] = true
-    local res = {}
+    statusMark[t] = true
     if type(first_val) == 'string' then
         local key = {}
-        for k in next, val do
+        for k in next, t do
             if type(k) ~= "string" then
                 error("invalid table: mixed or invalid key types")
             end
             key[#key+1] = k
         end
         table_sort(key)
-        for i = 1, #key do
+        statusQue[#statusQue+1] = "{"
+        local k = key[1]
+        encode_string(k)
+        statusQue[#statusQue+1] = ":"
+        encode(t[k])
+        for i = 2, #key do
             local k = key[i]
-            res[i] = encode_string(k) .. ":" .. encode(val[k])
+            statusQue[#statusQue+1] = ","
+            encode_string(k)
+            statusQue[#statusQue+1] = ":"
+            encode(t[k])
         end
-        encodeMark[val] = nil
-        return "{" .. table_concat(res, ",") .. "}"
+        statusQue[#statusQue+1] = "}"
     else
         local max = 0
-        for k in next, val do
+        for k in next, t do
             if math_type(k) ~= "integer" then
                 error("invalid table: mixed or invalid key types")
             end
             max = max > k and max or k
         end
-        for i = 1, max do
-            res[i] = encode(val[i])
+        statusQue[#statusQue+1] = "["
+        encode(t[1])
+        for i = 2, max do
+            statusQue[#statusQue+1] = ","
+            encode(t[i])
         end
-        encodeMark[val] = nil
-        return "[" .. table_concat(res, ",") .. "]"
+        statusQue[#statusQue+1] = "]"
     end
+    statusMark[t] = nil
 end
 
 local encode_map = {
@@ -136,14 +147,17 @@ local encode_map = {
 
 encode = function(val)
     if val == json.null then
-        return "null"
+        statusQue[#statusQue+1] = "null"
+    else
+        encode_map[type(val)](val)
     end
-    return encode_map[type(val)](val)
 end
 
 function json.encode(val)
-    encodeMark = {}
-    return encode(val)
+    statusMark = {}
+    statusQue = {}
+    encode(val)
+    return table_concat(statusQue)
 end
 
 -- json.decode --
