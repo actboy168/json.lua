@@ -24,19 +24,17 @@ end
 table.sort(lst)
 
 local decode = lt.test "decode"
-local decode_res = {}
-for i, file in ipairs(lst) do
-    local data = readfile(dir .. file)
-    decode[file] = function()
-        decode_res[i] = json.decode(data)
-    end
-end
-
 local encode = lt.test "encode"
-local encode_res = {}
+local decode_output = {}
+local encode_output = {}
 for i, file in ipairs(lst) do
+    local decode_input = readfile(dir .. file)
+    local encode_input = json.decode(decode_input)
+    decode[file] = function()
+        decode_output[i] = json.decode(decode_input)
+    end
     encode[file] = function()
-        encode_res[i] = json.encode(decode_res[i])
+        encode_output[i] = json.encode(encode_input)
     end
 end
 
