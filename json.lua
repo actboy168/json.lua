@@ -219,7 +219,7 @@ local function next_byte()
         statusPos = pos
         return string_byte(statusBuf, pos)
     end
-    decode_error("unexpected character '<eol>'")
+    return -1
 end
 
 local function consume_byte(c)
@@ -406,11 +406,15 @@ local decode_uncompleted_map = {
 local function unexpected_character()
     decode_error("unexpected character '" .. string_sub(statusBuf, statusPos, statusPos) .. "'")
 end
+local function unexpected_eol()
+    decode_error("unexpected character '<eol>'")
+end
 
 local decode_map = {}
 for i = 0, 255 do
     decode_map[i] = decode_uncompleted_map[i] or unexpected_character
 end
+decode_map[-1] = unexpected_eol
 
 local function decode()
     return decode_map[next_byte()]()
