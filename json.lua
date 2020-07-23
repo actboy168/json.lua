@@ -301,15 +301,12 @@ end
 
 local function decode_number_negative()
     local word = get_word()
-    if not (
-        string_match(word, '^.[1-9][0-9]*$')
-     or string_match(word, '^.[1-9][0-9]*%.[0-9]+$')
-     or string_match(word, '^.[1-9][0-9]*[Ee][+-]?[0-9]+$')
-     or string_match(word, '^.[1-9][0-9]*%.[0-9]+[Ee][+-]?[0-9]+$')
-     or word == "-0"
-     or string_match(word, '^.0%.[0-9]+$')
-     or string_match(word, '^.0[Ee][+-]?[0-9]+$')
-     or string_match(word, '^.0%.[0-9]+[Ee][+-]?[0-9]+$')
+    if  string_match(word, '^.0[0-9]')
+     or not (
+        string_match(word, '^.[0-9]+$')
+     or string_match(word, '^.[0-9]+%.[0-9]+$')
+     or string_match(word, '^.[0-9]+[Ee][+-]?[0-9]+$')
+     or string_match(word, '^.[0-9]+%.[0-9]+[Ee][+-]?[0-9]+$')
     ) then
         decode_error("invalid number '" .. word .. "'")
     end
