@@ -3,10 +3,12 @@ package.path = table.concat({
     "test/ltest/?.lua",
 }, ";")
 
-local lt = require "ltest"
-lt.moduleCoverage "json"
+local JSONLIB = "json"
 
-local json = require "json"
+local lt = require "ltest"
+lt.moduleCoverage(JSONLIB)
+
+local json = require(JSONLIB)
 
 local os_name = (function ()
     if package.config:sub(1,1) == '\\' then
@@ -120,6 +122,17 @@ function other.encode()
         until type(next(t)) == "string"
         lt.assertError(json.encode, t)
     end
+
+    os.setlocale "de_DE"
+    package.loaded[JSONLIB] = nil
+    json = require(JSONLIB)
+
+    lt.assertEquals(tostring(0.1), "0,1")
+    lt.assertEquals(json.encode(0.1), "0.1")
+
+    os.setlocale "C"
+    package.loaded[JSONLIB] = nil
+    json = require(JSONLIB)
 end
 
 function other.decode()

@@ -79,11 +79,18 @@ local function convertreal(v)
     return string_format('%.17g', v)
 end
 
+if string_match(tostring(1/2), "%p") == "," then
+    local _convertreal = convertreal
+    function convertreal(v)
+        return string_gsub(_convertreal(v), ',', '.')
+    end
+end
+
 function encode_map.number(v)
     if v ~= v or v <= -Inf or v >= Inf then
         error("unexpected number value '" .. tostring(v) .. "'")
     end
-    return string_gsub(convertreal(v), ',', '.')
+    return convertreal(v)
 end
 
 function encode_map.boolean(v)
