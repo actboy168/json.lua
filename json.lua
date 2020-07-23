@@ -61,10 +61,15 @@ encode_map["nil"] = function ()
     return "null"
 end
 
-function encode_map.string(v)
-    return '"' .. string_gsub(v, '[\0-\31\\"]', encode_escape_map) .. '"'
+local function encode_string(v)
+    return string_gsub(v, '[\0-\31\\"]', encode_escape_map)
 end
-local encode_string = encode_map.string
+
+function encode_map.string(v)
+    statusQue[#statusQue+1] = '"'
+    statusQue[#statusQue+1] = encode_string(v)
+    return '"'
+end
 
 local function convertreal(v)
     local g = string_format('%.16g', v)
@@ -111,16 +116,16 @@ function encode_map.table(t)
             key[#key+1] = k
         end
         table_sort(key)
-        statusQue[#statusQue+1] = "{"
         local k = key[1]
+        statusQue[#statusQue+1] = '{"'
         statusQue[#statusQue+1] = encode_string(k)
-        statusQue[#statusQue+1] = ":"
+        statusQue[#statusQue+1] = '":'
         encode(t[k])
         for i = 2, #key do
             local k = key[i]
-            statusQue[#statusQue+1] = ","
+            statusQue[#statusQue+1] = ',"'
             statusQue[#statusQue+1] = encode_string(k)
-            statusQue[#statusQue+1] = ":"
+            statusQue[#statusQue+1] = '":'
             encode(t[k])
         end
         statusMark[t] = nil
@@ -164,7 +169,8 @@ function json.encode(v)
     return table_concat(statusQue)
 end
 
-json.encode_map = encode_map
+json._encode_map = encode_map
+json._encode_string = encode_string
 
 -- json.decode --
 
