@@ -214,11 +214,11 @@ local function get_word()
 end
 
 local function next_byte()
-    statusPos = string_find(statusBuf, "[^ \t\r\n]", statusPos)
-    if statusPos then
-        return string_byte(statusBuf, statusPos)
+    local pos = string_find(statusBuf, "[^ \t\r\n]", statusPos)
+    if pos then
+        statusPos = pos
+        return string_byte(statusBuf, pos)
     end
-    statusPos = #statusBuf + 1
     decode_error("unexpected character '<eol>'")
 end
 
