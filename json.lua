@@ -222,6 +222,14 @@ local function next_byte()
     decode_error("unexpected character '<eol>'")
 end
 
+local function consume_byte(c)
+    local _, pos = string_find(statusBuf, c, statusPos)
+    if pos then
+        statusPos = pos + 1
+        return true
+    end
+end
+
 local function expect_byte(c)
     local _, pos = string_find(statusBuf, c, statusPos)
     if not pos then
@@ -355,8 +363,7 @@ end
 local function decode_array()
     statusPos = statusPos + 1
     local res = {}
-    if next_byte() == 93 --[[ "]" ]] then
-        statusPos = statusPos + 1
+    if consume_byte "^[ \t\r\n]*%]" then
         return res
     end
     statusTop = statusTop + 1
@@ -368,8 +375,7 @@ end
 local function decode_object()
     statusPos = statusPos + 1
     local res = {}
-    if next_byte() == 125 --[[ "}" ]] then
-        statusPos = statusPos + 1
+    if consume_byte "^[ \t\r\n]*}" then
         return setmetatable(res, json.object)
     end
     statusTop = statusTop + 1
