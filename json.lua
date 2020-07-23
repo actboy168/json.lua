@@ -16,7 +16,8 @@ local string_format = string.format
 local math_type = math.type
 local setmetatable = setmetatable
 local getmetatable = getmetatable
-local Inf = math.huge
+local pinf = math.huge
+local ninf = -pinf
 
 local json = {}
 json.object = {}
@@ -87,7 +88,7 @@ if string_match(tostring(1/2), "%p") == "," then
 end
 
 function encode_map.number(v)
-    if v ~= v or v <= -Inf or v >= Inf then
+    if v ~= v or v <= ninf or v >= pinf then
         error("unexpected number value '" .. tostring(v) .. "'")
     end
     return convertreal(v)

@@ -102,6 +102,9 @@ function other.encode()
     lt.assertEquals(json.encode(0.12345678901234566), "0.12345678901234566")
     lt.assertError(json.encode, function() end)
     lt.assertError(json.encode, math.huge)
+    lt.assertError(json.encode, -math.huge)
+    lt.assertError(json.encode, 0/0)
+
     do
         local t = {}; t[1] = t
         lt.assertError(json.encode, t)
