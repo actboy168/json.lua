@@ -122,8 +122,10 @@ function m.result()
             end
         end
         str[#str+1] = string.format("coverage: %02.02f%% (%d/%d) %s", pass/total*100, pass, total, file.name)
-        if #lines > 0 then str[#str+1] = table.concat(lines, " ") end
-        str[#str+1] = table.concat(status)
+        if #lines > 0 then
+            str[#str+1] = table.concat(lines, " ")
+            str[#str+1] = table.concat(status)
+        end
     end
     return table.concat(str, "\n")
 end
