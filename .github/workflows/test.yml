@@ -8,8 +8,8 @@ jobs:
       with:
         ref: refs/heads/master
         submodules: true
-    - uses: xpol/setup-lua@master
+    - uses: actboy168/setup-lua@master
       with:
-        lua-version: "5.3.5"
+        luaVersion: "5.4"
     - run: lua test/conformance.lua -c
     - run: lua test/benchmark.lua
