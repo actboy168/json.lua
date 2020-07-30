@@ -126,16 +126,17 @@ function other.encode()
         lt.assertError(json.encode, t)
     end
 
-    os.setlocale "de_DE"
-    package.loaded[JSONLIB] = nil
-    json = require(JSONLIB)
+    if os.setlocale "de_DE" == "C" then
+        package.loaded[JSONLIB] = nil
+        json = require(JSONLIB)
 
-    lt.assertEquals(tostring(0.1), "0,1")
-    lt.assertEquals(json.encode(0.1), "0.1")
+        lt.assertEquals(tostring(0.1), "0,1")
+        lt.assertEquals(json.encode(0.1), "0.1")
 
-    os.setlocale "C"
-    package.loaded[JSONLIB] = nil
-    json = require(JSONLIB)
+        lt.assertEquals(os.setlocale "C", "de_DE")
+        package.loaded[JSONLIB] = nil
+        json = require(JSONLIB)
+    end
 end
 
 function other.decode()
