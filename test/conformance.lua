@@ -98,7 +98,11 @@ end
 
 local other = lt.test "other"
 function other.encode()
+    json.supportSparseArray = false
+    lt.assertError(json.encode, {nil,1})
+    json.supportSparseArray = true
     lt.assertEquals(json.encode {nil,1}, "[null,1]")
+
     lt.assertEquals(json.encode(0.12345678901234566), "0.12345678901234566")
     lt.assertError(json.encode, function() end)
     lt.assertError(json.encode, math.huge)
