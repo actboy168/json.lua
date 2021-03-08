@@ -96,7 +96,7 @@ for name, path in each_directory "test/JSONTestSuite/test_transform" do
     end
 end
 
-local BigInt <const> = 2305843009213693951
+local BigInt = 2305843009213693951
 
 local other = lt.test "other"
 function other.encode()
