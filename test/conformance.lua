@@ -96,6 +96,8 @@ for name, path in each_directory "test/JSONTestSuite/test_transform" do
     end
 end
 
+local BigInt <const> = 2305843009213693951
+
 local other = lt.test "other"
 function other.encode()
     json.supportSparseArray = false
@@ -108,6 +110,8 @@ function other.encode()
     lt.assertError(json.encode, math.huge)
     lt.assertError(json.encode, -math.huge)
     lt.assertError(json.encode, 0/0)
+
+    lt.assertEquals(json.encode(BigInt), tostring(BigInt))
 
     do
         local t = {}; t[1] = t
@@ -146,6 +150,7 @@ end
 
 function other.decode()
     lt.assertError(json.decode, 1)
+    lt.assertEquals(json.decode(tostring(BigInt)), BigInt)
 end
 
 os.exit(lt.run(), true)
