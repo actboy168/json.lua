@@ -10,6 +10,11 @@ lt.moduleCoverage(JSONLIB)
 
 local json = require(JSONLIB)
 
+local function reload()
+    package.loaded[JSONLIB] = nil
+    json = require(JSONLIB)
+end
+
 local os_name = (function ()
     if package.config:sub(1,1) == '\\' then
         return os.getenv "OS"
@@ -99,6 +104,7 @@ end
 local BigInt = 2305843009213693951
 
 local other = lt.test "other"
+
 function other.encode()
     json.supportSparseArray = false
     lt.assertError(json.encode, {nil,1})
@@ -135,19 +141,27 @@ function other.encode()
     end
 
     if os.setlocale "de_DE" then
-        package.loaded[JSONLIB] = nil
-        json = require(JSONLIB)
-
+        reload()
         lt.assertEquals(tostring(0.1), "0,1")
         lt.assertEquals(json.encode(0.1), "0.1")
 
-        lt.assertEquals(os.setlocale "C", "C")
-        package.loaded[JSONLIB] = nil
-        json = require(JSONLIB)
-
+        os.setlocale "C"
+        reload()
         lt.assertEquals(tostring(0.1), "0.1")
         lt.assertEquals(json.encode(0.1), "0.1")
     end
+
+
+    local debug_upvalueid = debug.upvalueid
+    debug.upvalueid = nil
+    reload()
+    lt.assertEquals(type(json.null), "function")
+    lt.assertEquals(json.decode "null", json.null)
+
+    debug.upvalueid = debug_upvalueid
+    reload()
+    lt.assertEquals(type(json.null), "userdata")
+    lt.assertEquals(json.decode "null", json.null)
 end
 
 function other.decode()

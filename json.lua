@@ -475,7 +475,7 @@ function json.decode(str)
     return res
 end
 
-if debug then
+if debug and debug.upvalueid then
     -- Generate a lightuserdata
     json.null = debug.upvalueid(decode, 1)
 else
