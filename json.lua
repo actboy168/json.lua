@@ -65,7 +65,7 @@ encode_map["nil"] = function ()
 end
 
 local function encode_string(v)
-    return string_gsub(v, '[\0-\31\\"]', encode_escape_map)
+    return string_gsub(v, '[%z\1-\31\\"]', encode_escape_map)
 end
 
 function encode_map.string(v)
@@ -261,7 +261,7 @@ local function decode_string()
     local has_escape = false
     local i = statusPos + 1
     while true do
-        i = string_find(statusBuf, '[\0-\31\\"]', i)
+        i = string_find(statusBuf, '[%z\1-\31\\"]', i)
         if not i then
             decode_error "expected closing quote for string"
         end

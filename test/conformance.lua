@@ -3,12 +3,21 @@ package.path = table.concat({
     "test/ltest/?.lua",
 }, ";")
 
-local JSONLIB = "json"
+
+local JSONLIB
+local supportBigInt
+
+if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
+    JSONLIB = "json-51"
+    supportBigInt = false
+else
+    JSONLIB = "json"
+    supportBigInt = true
+end
 
 local lt = require "ltest"
-lt.moduleCoverage(JSONLIB)
-
 local json = require(JSONLIB)
+lt.moduleCoverage(JSONLIB)
 
 local function reload()
     package.loaded[JSONLIB] = nil
@@ -44,10 +53,10 @@ end
 
 local function readfile(path)
     local f = assert(io.open(path, "rb"))
-    if f:read(3) ~= "\xEF\xBB\xBF" then
+    if f:read(3) ~= "\239\187\191" then
         f:seek "set"
     end
-    local data = f:read "a"
+    local data = f:read "*a"
     f:close()
     return data
 end
@@ -117,7 +126,9 @@ function other.encode()
     lt.assertError(json.encode, -math.huge)
     lt.assertError(json.encode, 0/0)
 
-    lt.assertEquals(json.encode(BigInt), tostring(BigInt))
+    if supportBigInt then
+        lt.assertEquals(json.encode(BigInt), tostring(BigInt))
+    end
 
     do
         local t = {}; t[1] = t
@@ -160,13 +171,19 @@ function other.encode()
 
     debug.upvalueid = debug_upvalueid
     reload()
-    lt.assertEquals(type(json.null), "userdata")
+    if debug.upvalueid then
+        lt.assertEquals(type(json.null), "userdata")
+    else
+        lt.assertEquals(type(json.null), "function")
+    end
     lt.assertEquals(json.decode "null", json.null)
 end
 
 function other.decode()
     lt.assertError(json.decode, 1)
-    lt.assertEquals(json.decode(tostring(BigInt)), BigInt)
+    if supportBigInt then
+        lt.assertEquals(json.decode(tostring(BigInt)), BigInt)
+    end
 end
 
 os.exit(lt.run(), true)
