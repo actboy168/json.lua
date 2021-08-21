@@ -11,6 +11,7 @@
             "outputCapture": [
             ],
             "program": "test/conformance.lua",
+            "cwd": "${workspaceFolder}",
             "arg": [
             ]
         },
@@ -24,6 +25,7 @@
             "outputCapture": [
             ],
             "program": "test/benchmark.lua",
+            "cwd": "${workspaceFolder}"
         }
     ]
 }
