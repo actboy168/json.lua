@@ -3,15 +3,8 @@ package.path = table.concat({
     "test/ltest/?.lua",
 }, ";")
 
-local JSONLIB
-if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
-    JSONLIB = "json-51"
-else
-    JSONLIB = "json"
-end
-
 local lt = require "ltest"
-local json = require(JSONLIB)
+local json = require "json"
 
 local function readfile(path)
     local f = assert(io.open(path, "rb"))

@@ -4,16 +4,8 @@ package.path = table.concat({
 }, ";")
 
 
-local JSONLIB
-local supportBigInt
-
-if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
-    JSONLIB = "json-51"
-    supportBigInt = false
-else
-    JSONLIB = "json"
-    supportBigInt = true
-end
+local JSONLIB = "json"
+local supportBigInt = _VERSION ~= "Lua 5.1" and _VERSION ~= "Lua 5.2"
 
 local lt = require "ltest"
 local json = require(JSONLIB)
