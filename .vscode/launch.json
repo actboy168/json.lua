@@ -11,7 +11,6 @@
             "outputCapture": [
             ],
             "program": "test/conformance.lua",
-            "cwd": "${workspaceFolder}",
             "arg": [
             ]
         },
@@ -24,8 +23,7 @@
             "console": "integratedTerminal",
             "outputCapture": [
             ],
-            "program": "test/benchmark.lua",
-            "cwd": "${workspaceFolder}"
+            "program": "test/benchmark.lua"
         }
     ]
 }
