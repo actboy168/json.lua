@@ -249,7 +249,7 @@ local function find_line()
 end
 
 local function decode_error(msg)
-    error(string_format("ERROR: %s at line %d col %d", msg, find_line()))
+    error(string_format("ERROR: %s at line %d col %d", msg, find_line()), 2)
 end
 
 local function get_word()
