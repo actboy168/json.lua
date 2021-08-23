@@ -1,8 +1,28 @@
+local type = type
+local next = next
+local error = error
+local tonumber = tonumber
+local tostring = tostring
+local table_concat = table.concat
+local table_sort = table.sort
+local string_char = string.char
+local string_byte = string.byte
+local string_find = string.find
+local string_match = string.match
+local string_gsub = string.gsub
+local string_sub = string.sub
+local string_format = string.format
+local setmetatable = setmetatable
+local getmetatable = getmetatable
+local huge = math.huge
+local tiny = -huge
+
+local utf8_char
+local math_type
+
 if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
-    local string_char = string.char
     local math_floor = math.floor
-    utf8 = {}
-    function utf8.char(c)
+    function utf8_char(c)
         if c <= 0x7f then
             return string_char(c)
         elseif c <= 0x7ff then
@@ -23,34 +43,16 @@ if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
         end
         error(string.format("invalid UTF-8 code '%x'", c))
     end
-    function math.type(v)
+    function math_type(v)
         if v >= -2147483648 and v <= 2147483647 and math_floor(v) == v then
             return "integer"
         end
         return "float"
     end
+else
+    utf8_char = utf8.char
+    math_type = math.type
 end
-
-local type = type
-local next = next
-local error = error
-local tonumber = tonumber
-local tostring = tostring
-local utf8_char = utf8.char
-local table_concat = table.concat
-local table_sort = table.sort
-local string_char = string.char
-local string_byte = string.byte
-local string_find = string.find
-local string_match = string.match
-local string_gsub = string.gsub
-local string_sub = string.sub
-local string_format = string.format
-local math_type = math.type
-local setmetatable = setmetatable
-local getmetatable = getmetatable
-local huge = math.huge
-local tiny = -huge
 
 local json = {}
 json.object = {}
