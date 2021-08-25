@@ -15,15 +15,9 @@ json.decode '{"a":[1,{"b":2}]}'     -- Returns { a = {1, { b = 2 } } }
 assert(json.decode "null" == json.null)
 ```
 
-* The empty object will add the metatable `json.object`, while the empty array will not.
+* The empty object will add a metatable, while the empty array will not. You can use `json.isObject` to distinguish them.
 ```lua
-local function isArray(t)
-    if t[1] ~= nil then
-        return true
-    end
-    return next(t) == nil and getmetatable(t) == nil
-end
-assert(not isArray(json.decode "{}"))
-assert(isArray(json.decode "[]"))
+assert(not json.isObject(json.decode "{}"))
+assert(json.isObject(json.decode "[]"))
 ```
 
