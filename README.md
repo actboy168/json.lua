@@ -3,6 +3,11 @@
 
 A pure-Lua JSON library.
 
+## Features
+
+* Conformance: Fully supports [RFC 8259](https://datatracker.ietf.org/doc/html/rfc8259), 100% pass [JSONTestSuite](https://github.com/nst/JSONTestSuite).
+* Fast: Faster than other pure Lua JSON implementations.
+
 ## Usage
 ```lua
 local json = require "json"
