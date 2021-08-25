@@ -95,11 +95,7 @@ end
 
 local transform = lt.test "transform"
 for name, path in each_directory "test/JSONTestSuite/test_transform" do
-    if name:match "number_9223372036854775807" then
-        transform[name] = test_impl(path)
-    else
-        transform[name] = test_yes(path)
-    end
+    transform[name] = test_yes(path)
 end
 
 local BigInt = 2305843009213693951
