@@ -118,6 +118,9 @@ function other.encode()
     lt.assertError(json.encode, -math.huge)
     lt.assertError(json.encode, 0/0)
 
+    lt.assertEquals(json.isObject(json.decode "{}"), true)
+    lt.assertEquals(json.isObject(json.decode "[]"), false)
+
     if supportBigInt then
         lt.assertEquals(json.encode(BigInt), tostring(BigInt))
     end

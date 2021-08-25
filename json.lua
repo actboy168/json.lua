@@ -55,9 +55,20 @@ else
 end
 
 local json = {}
-json.object = {}
-
 json.supportSparseArray = true
+
+local objectMt = {}
+
+function json.createEmptyObject()
+    return setmetatable({}, objectMt)
+end
+
+function json.isObject(t)
+    if t[1] ~= nil then
+        return false
+    end
+    return next(t) ~= nil or getmetatable(t) == objectMt
+end
 
 -- json.encode --
 local statusVisited
@@ -145,7 +156,7 @@ end
 function encode_map.table(t)
     local first_val = next(t)
     if first_val == nil then
-        if getmetatable(t) == json.object then
+        if getmetatable(t) == objectMt then
             return "{}"
         else
             return "[]"
@@ -407,10 +418,10 @@ end
 
 local function decode_array()
     statusPos = statusPos + 1
-    local res = {}
     if consume_byte "^[ \t\r\n]*%]" then
-        return res
+        return {}
     end
+    local res = {}
     statusTop = statusTop + 1
     statusAry[statusTop] = true
     statusRef[statusTop] = res
@@ -419,10 +430,10 @@ end
 
 local function decode_object()
     statusPos = statusPos + 1
-    local res = {}
     if consume_byte "^[ \t\r\n]*}" then
-        return setmetatable(res, json.object)
+        return json.createEmptyObject()
     end
+    local res = {}
     statusTop = statusTop + 1
     statusAry[statusTop] = false
     statusRef[statusTop] = res

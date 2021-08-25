@@ -44,7 +44,7 @@ end
 function encode_map.table(t)
     local first_val = next(t)
     if first_val == nil then
-        if getmetatable(t) == json.object then
+        if json.isObject(t) then
             return "{}"
         else
             return "[]"
