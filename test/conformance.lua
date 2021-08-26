@@ -75,6 +75,13 @@ local function test_impl(path)
     end
 end
 
+function lt.format(className, methodName)
+    if className == "parsing" or className == "transform" then
+        return ("test/JSONTestSuite/test_%s/%s"):format(className, methodName)
+    end
+    return className..'.'..methodName
+end
+
 local parsing = lt.test "parsing"
 for name, path in each_directory "test/JSONTestSuite/test_parsing" do
     local type = name:sub(1,1)
