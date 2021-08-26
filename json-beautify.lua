@@ -85,14 +85,19 @@ function encode_map.table(t)
         statusMark[t] = nil
         return "}"
     else
+        local count = 0
         local max = 0
         for k in next, t do
             if math_type(k) ~= "integer" or k <= 0 then
                 error("invalid table: mixed or invalid key types")
             end
+            count = count + 1
             if max < k then
                 max = k
             end
+        end
+        if not json.supportSparseArray and count ~= max then
+            error("sparse array are not supported")
         end
         statusQue[#statusQue+1] = "["
         statusDep = statusDep + 1
