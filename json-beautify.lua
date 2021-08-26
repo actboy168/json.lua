@@ -111,9 +111,6 @@ function encode_map.table(t)
 end
 
 local function beautify(v, option)
-    if type(v) == "string" then
-        v = json.decode(v)
-    end
     statusMark = {}
     statusQue = {}
     statusDep = 0
