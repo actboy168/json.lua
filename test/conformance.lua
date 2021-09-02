@@ -16,15 +16,10 @@ local function reload()
     json = require(JSONLIB)
 end
 
-local os_name = (function ()
-    if package.config:sub(1,1) == '\\' then
-        return os.getenv "OS"
-    end
-    return io.popen "uname -s":read "l"
-end)()
+local isWindows = package.config:sub(1,1) == '\\'
 
 local function each_directory(dir)
-    local command = os_name == "Windows_NT"
+    local command = isWindows
         and "dir /B " .. dir:gsub("/", "\\") .. " 2>nul"
         or "ls -1 " .. dir
     local lst = {}
