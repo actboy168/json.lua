@@ -106,7 +106,14 @@ local other = lt.test "other"
 
 function other.encode()
     json.supportSparseArray = false
-    lt.assertError(json.encode, {nil,1})
+    lt.assertEquals(json.encode {}, "[]")
+    lt.assertEquals(json.encode {1}, "[1]")
+    lt.assertEquals(json.encode {1,2}, "[1,2]")
+    lt.assertError(json.encode, {nil,2})
+    lt.assertError(json.encode, {1,2,nil,4})
+    lt.assertError(json.encode, {1,2,[100]=1})
+    lt.assertError(json.encode, {1,2,a=1})
+    lt.assertError(json.encode, {1,2,[0]=1})
     json.supportSparseArray = true
     lt.assertEquals(json.encode {nil,1}, "[null,1]")
 

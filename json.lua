@@ -189,26 +189,38 @@ function encode_map.table(t)
         end
         statusVisited[t] = nil
         return "}"
-    else
-        local count = 0
+    elseif json.supportSparseArray then
         local max = 0
         for k in next, t do
             if math_type(k) ~= "integer" or k <= 0 then
                 error("invalid table: mixed or invalid key types")
             end
-            count = count + 1
             if max < k then
                 max = k
             end
-        end
-        if not json.supportSparseArray and count ~= max then
-            error("sparse array are not supported")
         end
         statusBuilder[#statusBuilder+1] = "["
         encode(t[1])
         for i = 2, max do
             statusBuilder[#statusBuilder+1] = ","
             encode(t[i])
+        end
+        statusVisited[t] = nil
+        return "]"
+    else
+        if t[1] == nil then
+            error("invalid table: mixed or invalid key types")
+        end
+        statusBuilder[#statusBuilder+1] = "["
+        encode(t[1])
+        local count = 2
+        while t[count] ~= nil do
+            statusBuilder[#statusBuilder+1] = ","
+            encode(t[count])
+            count = count + 1
+        end
+        if next(t, count-1) ~= nil then
+            error("invalid table: mixed or invalid key types")
         end
         statusVisited[t] = nil
         return "]"
