@@ -3,13 +3,26 @@ package.path = table.concat({
     "test/ltest/?.lua",
 }, ";")
 
-
-local JSONLIB = "json"
+JSONLIB = JSONLIB or "json"
 local supportBigInt = _VERSION ~= "Lua 5.1" and _VERSION ~= "Lua 5.2"
 
 local lt = require "ltest"
 local json = require(JSONLIB)
 lt.moduleCoverage(JSONLIB)
+
+local jsonc_yes = {
+    -- TrailingComma
+    ["n_array_extra_comma.json"] = true,
+    ["n_array_number_and_comma.json"] = true,
+    ["n_object_lone_continuation_byte_in_key_and_trailing_comma.json"] = true,
+    ["n_object_trailing_comma.json"] = true,
+    -- EmptyContent
+    ["n_single_space.json"] = true,
+    ["n_structure_UTF8_BOM_no_data.json"] = true,
+    ["n_structure_no_data.json"] = true,
+    -- Comments
+    ["n_structure_object_with_comment.json"] = true,
+}
 
 local function reload()
     package.loaded[JSONLIB] = nil
@@ -80,7 +93,9 @@ end
 local parsing = lt.test "parsing"
 for name, path in each_directory "test/JSONTestSuite/test_parsing" do
     local type = name:sub(1,1)
-    if type == "y" then
+    if JSONLIB == "jsonc" and jsonc_yes[name] then
+        parsing[name] = test_yes(path)
+    elseif type == "y" then
         parsing[name] = test_yes(path)
     elseif type == "n" then
         parsing[name] = test_no(path)
@@ -104,7 +119,7 @@ local BigInt = 2305843009213693951
 
 local other = lt.test "other"
 
-function other.encode()
+function other.encode_sparse_array()
     json.supportSparseArray = false
     lt.assertEquals(json.encode {}, "[]")
     lt.assertEquals(json.encode {1}, "[1]")
@@ -116,21 +131,24 @@ function other.encode()
     lt.assertError(json.encode, {1,2,[0]=1})
     json.supportSparseArray = true
     lt.assertEquals(json.encode {nil,1}, "[null,1]")
+end
 
+function other.encode_float()
     lt.assertEquals(json.encode(0.12345678901234566), "0.12345678901234566")
     lt.assertError(json.encode, function() end)
     lt.assertError(json.encode, math.huge)
     lt.assertError(json.encode, -math.huge)
     lt.assertError(json.encode, 0/0)
+    if supportBigInt then
+        lt.assertEquals(json.encode(BigInt), tostring(BigInt))
+    end
+end
 
+function other.encode()
     lt.assertEquals(json.isObject(json.decode "{}"), true)
     lt.assertEquals(json.isObject(json.decode "[]"), false)
     lt.assertEquals(json.isObject(json.decode '{"a":1}'), true)
     lt.assertEquals(json.isObject(json.decode "[1]"), false)
-
-    if supportBigInt then
-        lt.assertEquals(json.encode(BigInt), tostring(BigInt))
-    end
 
     do
         local t = {}; t[1] = t
