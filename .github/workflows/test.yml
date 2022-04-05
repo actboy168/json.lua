@@ -8,9 +8,8 @@ jobs:
       matrix:
         luaVersion: ['5.4', '5.3', '5.2', '5.1']
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
-        ref: refs/heads/master
         submodules: true
     - uses: actboy168/setup-lua@master
       with:
