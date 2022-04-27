@@ -15,7 +15,8 @@ local statusOpt
 
 local defaultOpt = {
     newline = "\n",
-    indent = "  ",
+    indent = "    ",
+    depth = 0,
 }
 defaultOpt.__index = defaultOpt
 
@@ -131,15 +132,20 @@ function encode_map.table(t)
     end
 end
 
+local function beautify_option(option)
+    return option and setmetatable(option, defaultOpt) or defaultOpt
+end
+
 local function beautify(v, option)
     statusVisited = {}
     statusBuilder = {}
-    statusDep = 0
-    statusOpt = option and setmetatable(option, defaultOpt) or defaultOpt
+    statusOpt = beautify_option(option)
+    statusDep = statusOpt.depth
     encode(v)
     return table_concat(statusBuilder)
 end
 
 json.beautify = beautify
+json.beautify_option = beautify_option
 
 return json
