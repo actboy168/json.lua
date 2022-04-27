@@ -2,9 +2,6 @@ local type = type
 local next = next
 local error = error
 local tonumber = tonumber
-local tostring = tostring
-local table_concat = table.concat
-local table_sort = table.sort
 local string_char = string.char
 local string_byte = string.byte
 local string_find = string.find
@@ -13,13 +10,8 @@ local string_gsub = string.gsub
 local string_sub = string.sub
 local string_rep = string.rep
 local string_format = string.format
-local setmetatable = setmetatable
-local getmetatable = getmetatable
-local huge = math.huge
-local tiny = -huge
 
 local utf8_char
-local math_type
 
 if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
     local math_floor = math.floor
@@ -44,15 +36,8 @@ if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
         end
         error(string.format("invalid UTF-8 code '%x'", c))
     end
-    function math_type(v)
-        if v >= -2147483648 and v <= 2147483647 and math_floor(v) == v then
-            return "integer"
-        end
-        return "float"
-    end
 else
     utf8_char = utf8.char
-    math_type = math.type
 end
 
 local json = require "json-beautify"
@@ -494,7 +479,7 @@ local function apply_array_insert_before(str, option, value, node)
         .. json.beautify(value, option)
         .. ","
         .. option.newline
-        .. string.rep(option.indent, option.depth)
+        .. string_rep(option.indent, option.depth)
         .. finish_text
 end
 
@@ -505,7 +490,7 @@ local function apply_array_insert_after(str, option, value, node)
     return start_text
         .. ","
         .. option.newline
-        .. string.rep(option.indent, option.depth)
+        .. string_rep(option.indent, option.depth)
         .. json.beautify(value, option)
         .. finish_text
 end
@@ -528,7 +513,7 @@ local function apply_object_insert(str, option, value, t, k)
         return start_text
             .. ","
             .. option.newline
-            .. string.rep(option.indent, option.depth)
+            .. string_rep(option.indent, option.depth)
             .. '"'
             .. json._encode_string(k)
             .. '": '
