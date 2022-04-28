@@ -316,8 +316,9 @@ end
 decode_map[-1] = unexpected_eol
 
 local function decode()
+    local chr = next_byte()
     local ast = {s = statusPos, d = statusTop}
-    ast.v = decode_map[next_byte()](ast)
+    ast.v = decode_map[chr](ast)
     ast.f = statusPos
     return ast
 end
@@ -330,11 +331,11 @@ local function decode_item()
     else
         local start = statusPos
         local key = decode_string()
+        local finish = statusPos
         if next_byte() ~= 58 --[[ ':' ]] then
             decode_error "expected ':'"
         end
         statusPos = statusPos + 1
-        local finish = statusPos
         local val = decode()
         val.key_s = start
         val.key_f = finish
@@ -434,31 +435,24 @@ local function del_first_empty_line(str)
     if pos then
         local nl1 = str:sub(pos-1, pos-1)
         if nl1:match "[\r\n]" then
-            local nl2 = str:sub(pos-2, pos-2)
-            if nl2:match "[\r\n]" and nl1 ~= nl2 then
-                return str:sub(1, pos-3)
-            else
-                return str:sub(1, pos-2)
-            end
+            return pos-1
         end
     end
-    return str
 end
 
 local function del_last_empty_line(str)
     local pos = str:match("^[ \t]*()")
     if pos then
-        local nl1 = str:sub(pos+1, pos+1)
+        local nl1 = str:sub(pos, pos)
         if nl1:match "[\r\n]" then
-            local nl2 = str:sub(pos+2, pos+2)
+            local nl2 = str:sub(pos+1, pos+1)
             if nl2:match "[\r\n]" and nl1 ~= nl2 then
-                return str:sub(pos+3)
+                return pos+2
             else
-                return str:sub(pos+2)
+                return pos+1
             end
         end
     end
-    return str
 end
 
 local function find_max_node(t)
@@ -474,7 +468,7 @@ end
 local function apply_array_insert_before(str, option, value, node)
     local start_text = str:sub(1, node.s-1)
     local finish_text = str:sub(node.s)
-    option.depth = node.d + 1
+    option.depth = option.depth + node.d
     return start_text
         .. json.beautify(value, option)
         .. ","
@@ -486,7 +480,7 @@ end
 local function apply_array_insert_after(str, option, value, node)
     local start_text = str:sub(1, node.f-1)
     local finish_text = str:sub(node.f)
-    option.depth = node.d + 1
+    option.depth = option.depth + node.d
     return start_text
         .. ","
         .. option.newline
@@ -496,9 +490,9 @@ local function apply_array_insert_after(str, option, value, node)
 end
 
 local function apply_replace(str, option, value, node)
-    local start_text = str:sub(1, node.s)
+    local start_text = str:sub(1, node.s-1)
     local finish_text = str:sub(node.f)
-    option.depth = node.d + 1
+    option.depth = option.depth + node.d
     return start_text
         .. json.beautify(value, option)
         .. finish_text
@@ -509,7 +503,7 @@ local function apply_object_insert(str, option, value, t, k)
     if node then
         local start_text = str:sub(1, node.f-1)
         local finish_text = str:sub(node.f)
-        option.depth = node.d + 1
+        option.depth = option.depth + node.d
         return start_text
             .. ","
             .. option.newline
@@ -523,9 +517,15 @@ local function apply_object_insert(str, option, value, t, k)
 end
 
 local function apply_remove(str, s, f)
-    local start_text = del_first_empty_line(str:sub(1, s-1))
-    local finish_text = del_last_empty_line(str:sub(f+1))
-    return start_text .. finish_text
+    local start_text = str:sub(1, s-1)
+    local finish_text = str:sub(f+1)
+    local start_pos = del_first_empty_line(start_text)
+    local finish_pos = del_last_empty_line(finish_text)
+    if start_pos and finish_pos then
+        return start_text:sub(1,start_pos) .. finish_text:sub(finish_pos)
+    else
+        return start_text .. finish_text
+    end
 end
 
 local OP = {}

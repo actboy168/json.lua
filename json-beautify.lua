@@ -133,7 +133,7 @@ function encode_map.table(t)
 end
 
 local function beautify_option(option)
-    return option and setmetatable(option, defaultOpt) or defaultOpt
+    return setmetatable(option or {}, defaultOpt)
 end
 
 local function beautify(v, option)

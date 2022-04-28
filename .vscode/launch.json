@@ -9,6 +9,9 @@
             "luaArch": "x86_64",
             "console": "integratedTerminal",
             "outputCapture": [
+                "io.write",
+                "print",
+                "stderr",
             ],
             "program": "test/conformance.lua",
             "arg": [
@@ -24,6 +27,17 @@
             "outputCapture": [
             ],
             "program": "test/benchmark.lua"
+        },
+        {
+            "name": "edit",
+            "type": "lua",
+            "request": "launch",
+            "luaVersion": "5.4",
+            "luaArch": "x86_64",
+            "console": "integratedTerminal",
+            "outputCapture": [
+            ],
+            "program": "test/edit.lua"
         }
     ]
 }
