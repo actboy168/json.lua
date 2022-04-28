@@ -41,7 +41,7 @@ if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
                 c % 64 + 128
             )
         end
-        error(string.format("invalid UTF-8 code '%x'", c))
+        error(string_format("invalid UTF-8 code '%x'", c))
     end
     function math_type(v)
         if v >= -2147483648 and v <= 2147483647 and math_floor(v) == v then

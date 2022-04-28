@@ -34,7 +34,7 @@ if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
                 c % 64 + 128
             )
         end
-        error(string.format("invalid UTF-8 code '%x'", c))
+        error(string_format("invalid UTF-8 code '%x'", c))
     end
 else
     utf8_char = utf8.char
