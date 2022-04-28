@@ -8,6 +8,9 @@ local supportBigInt = _VERSION ~= "Lua 5.1" and _VERSION ~= "Lua 5.2"
 
 local lt = require "ltest"
 local json = require(JSONLIB)
+if JSONLIB == "jsonc" then
+    json.decode = json.decode_jsonc
+end
 lt.moduleCoverage(JSONLIB)
 
 local jsonc_yes = {

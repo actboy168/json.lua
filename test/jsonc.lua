@@ -9,10 +9,10 @@ local jsonc = require "jsonc"
 local m = lt.test "jsonc"
 
 local function test_yes(input, ouput)
-    lt.assertEquals(jsonc.encode(jsonc.decode(input)), jsonc.encode(ouput))
+    lt.assertEquals(jsonc.encode(jsonc.decode_jsonc(input)), jsonc.encode(ouput))
 end
 local function test_no(input)
-    lt.assertError(jsonc.decode, input)
+    lt.assertError(jsonc.decode_jsonc, input)
 end
 
 function m.comment()
@@ -30,7 +30,7 @@ function m.comment()
     test_yes("{/**/}", jsonc.createEmptyObject())
     test_yes("[/**/]", {})
     test_yes("", jsonc.null)
-    lt.assertEquals(jsonc.decode(""), jsonc.null)
+    lt.assertEquals(jsonc.decode_jsonc(""), jsonc.null)
     test_no [[
         []
         /* block comment
