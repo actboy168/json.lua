@@ -5,8 +5,21 @@ local error = error
 local table_concat = table.concat
 local table_sort = table.sort
 local string_rep = string.rep
-local math_type = math.type
 local setmetatable = setmetatable
+
+local math_type
+
+if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
+    local math_floor = math.floor
+    function math_type(v)
+        if v >= -2147483648 and v <= 2147483647 and math_floor(v) == v then
+            return "integer"
+        end
+        return "float"
+    end
+else
+    math_type = math.type
+end
 
 local statusVisited
 local statusBuilder

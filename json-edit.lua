@@ -12,6 +12,7 @@ local string_rep = string.rep
 local string_format = string.format
 
 local utf8_char
+local math_type
 
 if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
     local math_floor = math.floor
@@ -36,8 +37,15 @@ if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
         end
         error(string_format("invalid UTF-8 code '%x'", c))
     end
+    function math_type(v)
+        if v >= -2147483648 and v <= 2147483647 and math_floor(v) == v then
+            return "integer"
+        end
+        return "float"
+    end
 else
     utf8_char = utf8.char
+    math_type = math.type
 end
 
 local json = require "json-beautify"
@@ -388,7 +396,7 @@ end
 
 local function split(s)
     local r = {}
-    s:gsub('[^/]*', function (w)
+    s:gsub('[^/]+', function (w)
         r[#r+1] = w:gsub("~1", "/"):gsub("~0", "~")
     end)
     return r
@@ -409,7 +417,7 @@ local function query_(ast, pathlst, n)
                 return
             end
             k = tonumber(k)
-            if k == nil or math.type(k) ~= "integer" or k <= 0 or k > #data + 1 then
+            if k == nil or math_type(k) ~= "integer" or k <= 0 or k > #data + 1 then
                 return
             end
         end
