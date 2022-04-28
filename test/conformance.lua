@@ -28,6 +28,7 @@ local jsonc_yes = {
 }
 
 local function reload()
+    package.loaded['json'] = nil
     package.loaded[JSONLIB] = nil
     json = require(JSONLIB)
 end
