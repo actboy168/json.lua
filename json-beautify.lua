@@ -71,7 +71,7 @@ function encode_map.table(t)
         local key = {}
         for k in next, t do
             if type(k) ~= "string" then
-                error("invalid table: mixed or invalid key types")
+                error("invalid table: mixed or invalid key types: "..k)
             end
             key[#key+1] = k
         end
@@ -101,7 +101,7 @@ function encode_map.table(t)
         local max = 0
         for k in next, t do
             if math_type(k) ~= "integer" or k <= 0 then
-                error("invalid table: mixed or invalid key types")
+                error("invalid table: mixed or invalid key types: "..k)
             end
             if max < k then
                 max = k
@@ -122,7 +122,7 @@ function encode_map.table(t)
         return "]"
     else
         if t[1] == nil then
-            error("invalid table: mixed or invalid key types")
+            error("invalid table: sparse array is not supported")
         end
         statusBuilder[#statusBuilder+1] = "["
         statusDep = statusDep + 1
@@ -136,7 +136,12 @@ function encode_map.table(t)
             count = count + 1
         end
         if next(t, count-1) ~= nil then
-            error("invalid table: mixed or invalid key types")
+            local k = next(t, count-1)
+            if type(k) == "number" then
+                error("invalid table: sparse array is not supported")
+            else
+                error("invalid table: mixed or invalid key types: "..k)
+            end
         end
         statusDep = statusDep - 1
         encode_newline()
