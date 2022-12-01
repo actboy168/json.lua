@@ -80,7 +80,7 @@ local JSON = [[
 local patch = {
     op = "replace",
     path = "/name",
-    data = "jsonc",
+    value = "jsonc",
 }
 -- same as json.beautify
 local option = {

@@ -134,7 +134,7 @@ function testsuc.add()
     TEST {
         op = "add",
         path = "/stopOnEntry",
-        data = true,
+        value = true,
         expected = [[
 {
     /*
@@ -160,7 +160,7 @@ function testsuc.add()
     TEST {
         op = "add",
         path = "/outputCapture",
-        data = {"print"},
+        value = {"print"},
         expected = [[
 {
     /*
@@ -183,7 +183,7 @@ function testsuc.add()
     TEST {
         op = "add",
         path = "/outputCapture/-",
-        data = "stdout",
+        value = "stdout",
         expected = [[
 {
     /*
@@ -209,7 +209,7 @@ function testsuc.add()
     TEST {
         op = "add",
         path = "/outputCapture/1",
-        data = "stdout",
+        value = "stdout",
         expected = [[
 {
     /*
@@ -238,7 +238,7 @@ function testsuc.replace()
     TEST {
         op = "replace",
         path = "/request",
-        data = "attach",
+        value = "attach",
         expected = [[
 {
     /*
@@ -263,7 +263,7 @@ function testsuc.replace()
     TEST {
         op = "replace",
         path = "/outputCapture/1",
-        data = "stdout",
+        value = "stdout",
         expected = [[
 {
     /*

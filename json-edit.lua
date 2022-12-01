@@ -616,7 +616,7 @@ local function edit(str, patch, option)
         return
     end
     option = json.beautify_option(option)
-    return f(str, option, patch.path, patch.data)
+    return f(str, option, patch.path, patch.value)
 end
 
 json.edit = edit
