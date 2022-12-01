@@ -27,6 +27,8 @@ local JSON = [[
     "program": "test/conformance.lua",
     "arg": [
     ],
+    "env": {
+    },
 }]]
 
 local function findline(str, positon)
@@ -79,6 +81,8 @@ function testsuc.remove()
     "program": "test/conformance.lua",
     "arg": [
     ],
+    "env": {
+    },
 }]]
     }
     TEST {
@@ -102,6 +106,8 @@ function testsuc.remove()
     "program": "test/conformance.lua",
     "arg": [
     ],
+    "env": {
+    },
 }]]
     }
     TEST {
@@ -126,6 +132,8 @@ function testsuc.remove()
     "program": "test/conformance.lua",
     "arg": [
     ],
+    "env": {
+    },
 }]]
     }
 end
@@ -154,6 +162,8 @@ function testsuc.add()
     "program": "test/conformance.lua",
     "arg": [
     ],
+    "env": {
+    },
     "stopOnEntry": true,
 }]]
     }
@@ -178,6 +188,8 @@ function testsuc.add()
     "program": "test/conformance.lua",
     "arg": [
     ],
+    "env": {
+    },
 }]]
     }
     TEST {
@@ -204,6 +216,8 @@ function testsuc.add()
     "program": "test/conformance.lua",
     "arg": [
     ],
+    "env": {
+    },
 }]]
     }
     TEST {
@@ -230,6 +244,8 @@ function testsuc.add()
     "program": "test/conformance.lua",
     "arg": [
     ],
+    "env": {
+    },
 }]]
     }
 end
@@ -258,6 +274,8 @@ function testsuc.replace()
     "program": "test/conformance.lua",
     "arg": [
     ],
+    "env": {
+    },
 }]]
     }
     TEST {
@@ -283,6 +301,67 @@ function testsuc.replace()
     "program": "test/conformance.lua",
     "arg": [
     ],
+    "env": {
+    },
+}]]
+    }
+end
+
+function testsuc.empty_table()
+    TEST {
+        op = "add",
+        path = "/env/LUA_VERSION",
+        value = "5.4",
+        expected = [[
+{
+    /*
+     * launch.json
+     */
+    "name": "conformance",
+    "type": "lua",
+    "request": "launch",
+    "luaVersion": "5.4",
+    //"luaArch": "x86_64",
+    "console": "integratedTerminal",  // optional
+    "outputCapture": [
+        "io.write",
+        "print",
+        "stderr",
+    ],
+    "program": "test/conformance.lua",
+    "arg": [
+    ],
+    "env": {
+        "LUA_VERSION": "5.4"
+    },
+}]]
+    }
+    TEST {
+        op = "add",
+        path = "/arg/-",
+        value = "-e",
+        expected = [[
+{
+    /*
+     * launch.json
+     */
+    "name": "conformance",
+    "type": "lua",
+    "request": "launch",
+    "luaVersion": "5.4",
+    //"luaArch": "x86_64",
+    "console": "integratedTerminal",  // optional
+    "outputCapture": [
+        "io.write",
+        "print",
+        "stderr",
+    ],
+    "program": "test/conformance.lua",
+    "arg": [
+        "-e"
+    ],
+    "env": {
+    },
 }]]
     }
 end
