@@ -54,6 +54,8 @@ local function TEST(patch)
     if actual == expected then
         return
     end
+    lt.assertIsString(actual)
+    assert(type(actual) == "string")
     for i = 1, #expected do
         if string.byte(actual, i) ~= string.byte(expected, i) then
             local line, col = findline(actual, i)
