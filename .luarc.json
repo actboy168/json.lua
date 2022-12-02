@@ -1,7 +1,7 @@
 {
     "diagnostics": {
         "groupFileStatus": {
-            "unused": "Any",
+            "unused": "Any"
         },
         "groupSeverity": {
             "unused": "Warning"
