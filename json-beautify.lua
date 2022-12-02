@@ -79,11 +79,13 @@ function encode_map.table(t)
         statusBuilder[#statusBuilder+1] = "{"
         statusDep = statusDep + 1
         encode_newline()
-        local k = key[1]
-        statusBuilder[#statusBuilder+1] = '"'
-        statusBuilder[#statusBuilder+1] = encode_string(k)
-        statusBuilder[#statusBuilder+1] = '": '
-        encode(t[k])
+        do
+            local k = key[1]
+            statusBuilder[#statusBuilder+1] = '"'
+            statusBuilder[#statusBuilder+1] = encode_string(k)
+            statusBuilder[#statusBuilder+1] = '": '
+            encode(t[k])
+        end
         for i = 2, #key do
             local k = key[i]
             statusBuilder[#statusBuilder+1] = ","

@@ -183,11 +183,13 @@ function encode_map.table(t)
             keys[#keys+1] = k
         end
         table_sort(keys)
-        local k = keys[1]
-        statusBuilder[#statusBuilder+1] = '{"'
-        statusBuilder[#statusBuilder+1] = encode_string(k)
-        statusBuilder[#statusBuilder+1] = '":'
-        encode(t[k])
+        do
+            local k = keys[1]
+            statusBuilder[#statusBuilder+1] = '{"'
+            statusBuilder[#statusBuilder+1] = encode_string(k)
+            statusBuilder[#statusBuilder+1] = '":'
+            encode(t[k])
+        end
         for i = 2, #keys do
             local k = keys[i]
             statusBuilder[#statusBuilder+1] = ',"'

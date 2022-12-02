@@ -87,6 +87,7 @@ local function test_impl(path)
     end
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function lt.format(className, methodName)
     if className == "parsing" or className == "transform" then
         return ("test/JSONTestSuite/test_%s/%s"):format(className, methodName)
