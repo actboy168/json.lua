@@ -178,7 +178,6 @@ function other.encode()
 
     if os.setlocale "de_DE" then
         reload()
-        lt.assertEquals(tostring(0.1), "0,1")
         lt.assertEquals(json.encode(0.1), "0.1")
 
         os.setlocale "C"
