@@ -2,6 +2,7 @@ local type = type
 local next = next
 local error = error
 local tonumber = tonumber
+local table_concat = table.concat
 local string_char = string.char
 local string_byte = string.byte
 local string_find = string.find
@@ -473,50 +474,59 @@ local function find_max_node(t)
     return max
 end
 
+local function encode_newline(option)
+    return option.newline..string_rep(option.indent, option.depth)
+end
+
 local function apply_array_insert_before(str, option, value, node)
     local start_text = str:sub(1, node.s-1)
     local finish_text = str:sub(node.s)
     option.depth = option.depth + node.d
-    return start_text
-        .. json.beautify(value, option)
-        .. ","
-        .. option.newline
-        .. string_rep(option.indent, option.depth)
-        .. finish_text
+    local bd = {}
+    bd[#bd+1] = start_text
+    json._beautify_builder(bd, value, option)
+    bd[#bd+1] = ","
+    bd[#bd+1] = encode_newline(option)
+    bd[#bd+1] = finish_text
+    return table_concat(bd)
 end
 
 local function apply_array_insert_after(str, option, value, node)
     local start_text = str:sub(1, node.f-1)
     local finish_text = str:sub(node.f)
     option.depth = option.depth + node.d
-    return start_text
-        .. ","
-        .. option.newline
-        .. string_rep(option.indent, option.depth)
-        .. json.beautify(value, option)
-        .. finish_text
+    local bd = {}
+    bd[#bd+1] = start_text
+    bd[#bd+1] = ","
+    bd[#bd+1] = encode_newline(option)
+    json._beautify_builder(bd, value, option)
+    bd[#bd+1] = finish_text
+    return table_concat(bd)
 end
 
 local function apply_array_insert_empty(str, option, value, node)
     local start_text = str:sub(1, node.s)
     local finish_text = str:sub(node.f-1)
     option.depth = option.depth + node.d + 1
-    return start_text
-        .. option.newline
-        .. string_rep(option.indent, option.depth)
-        .. json.beautify(value, option)
-        .. option.newline
-        .. string_rep(option.indent, option.depth-1)
-        .. finish_text
+    local bd = {}
+    bd[#bd+1] = start_text
+    bd[#bd+1] = encode_newline(option)
+    json._beautify_builder(bd, value, option)
+    option.depth = option.depth - 1
+    bd[#bd+1] = encode_newline(option)
+    bd[#bd+1] = finish_text
+    return table_concat(bd)
 end
 
 local function apply_replace(str, option, value, node)
     local start_text = str:sub(1, node.s-1)
     local finish_text = str:sub(node.f)
     option.depth = option.depth + node.d
-    return start_text
-        .. json.beautify(value, option)
-        .. finish_text
+    local bd = {}
+    bd[#bd+1] = start_text
+    json._beautify_builder(bd, value, option)
+    bd[#bd+1] = finish_text
+    return table_concat(bd)
 end
 
 local function apply_object_insert(str, option, value, t, k)
@@ -525,29 +535,31 @@ local function apply_object_insert(str, option, value, t, k)
         local start_text = str:sub(1, node.f-1)
         local finish_text = str:sub(node.f)
         option.depth = option.depth + node.d
-        return start_text
-            .. ","
-            .. option.newline
-            .. string_rep(option.indent, option.depth)
-            .. '"'
-            .. json._encode_string(k)
-            .. '": '
-            .. json.beautify(value, option)
-            .. finish_text
+        local bd = {}
+        bd[#bd+1] = start_text
+        bd[#bd+1] = ","
+        bd[#bd+1] = encode_newline(option)
+        bd[#bd+1] = '"'
+        bd[#bd+1] = json._encode_string(k)
+        bd[#bd+1] = '": '
+        json._beautify_builder(bd, value, option)
+        bd[#bd+1] = finish_text
+        return table_concat(bd)
     else
         local start_text = str:sub(1, t.s)
         local finish_text = str:sub(t.f-1)
         option.depth = option.depth + t.d + 1
-        return start_text
-            .. option.newline
-            .. string_rep(option.indent, option.depth)
-            .. '"'
-            .. json._encode_string(k)
-            .. '": '
-            .. json.beautify(value, option)
-            .. option.newline
-            .. string_rep(option.indent, option.depth-1)
-            .. finish_text
+        local bd = {}
+        bd[#bd+1] = start_text
+        bd[#bd+1] = encode_newline(option)
+        bd[#bd+1] = '"'
+        bd[#bd+1] = json._encode_string(k)
+        bd[#bd+1] = '": '
+        json._beautify_builder(bd, value, option)
+        option.depth = option.depth - 1
+        bd[#bd+1] = encode_newline(option)
+        bd[#bd+1] = finish_text
+        return table_concat(bd)
     end
 end
 
@@ -648,7 +660,7 @@ local function edit(str, patch, option)
     if not f then
         return
     end
-    option = json.beautify_option(option)
+    option = json._beautify_option(option)
     return f(str, option, patch.path, patch.value)
 end
 
