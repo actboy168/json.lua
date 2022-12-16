@@ -1,5 +1,6 @@
 # json.lua
-![Build Status](https://github.com/actboy168/json.lua/workflows/test/badge.svg)
+
+[![test](https://github.com/actboy168/json.lua/actions/workflows/test.yml/badge.svg)](https://github.com/actboy168/json.lua/actions/workflows/test.yml)
 
 A pure-Lua JSON library.
 
