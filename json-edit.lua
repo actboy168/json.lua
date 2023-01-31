@@ -3,6 +3,7 @@ local next = next
 local error = error
 local tonumber = tonumber
 local table_concat = table.concat
+local table_move = table.move
 local string_char = string.char
 local string_byte = string.byte
 local string_find = string.find
@@ -375,6 +376,8 @@ local function decode_item()
     end
 end
 
+local JsonEmpty = function () end
+
 local function decode_ast(str)
     if type(str) ~= "string" then
         error("expected argument of type string, got " .. type(str))
@@ -383,7 +386,7 @@ local function decode_ast(str)
     statusPos = 1
     statusTop = 0
     if next_byte() == -1 then
-        return {s = statusPos, d = statusTop, f = statusPos, v = json.null}
+        return {s = statusPos, d = statusTop, f = statusPos, v = JsonEmpty}
     end
     local res = decode()
     while statusTop > 0 do
@@ -428,19 +431,23 @@ local function query_(ast, pathlst, n)
     end
     local v = data[k]
     if v == nil then
-        return nil, string_format("path `%s` is empty", "/"..table_concat(pathlst, "/", 1, n))
+        return ast, k, isarray, table_move(pathlst, n + 1, #pathlst, 1, {})
     end
     return query_(v, pathlst, n + 1)
 end
 
-local function query(ast, path)
+local function split_path(path)
     if type(path) ~= "string" then
         return nil, "path is not a string"
     end
     if path:sub(1,1) ~= "/" then
         return nil, "path must start with `/`"
     end
-    return query_(ast, split(path:sub(2)), 1)
+    return split(path:sub(2))
+end
+
+local function query(ast, path)
+    return query_(ast, split_path(path), 1)
 end
 
 local function del_first_empty_line(str)
@@ -579,20 +586,32 @@ local function apply_remove(str, s, f)
     end
 end
 
+local function add_prefix(v, pathlst)
+    for i = #pathlst, 1, -1 do
+        v = { [pathlst[i]] = v }
+    end
+    return v
+end
+
 local OP = {}
 
 function OP.add(str, option, path, value)
-    if value == nil then
-        return 'null'
-    end
-    if path == '' then
+    if path == '/' then
         return json.beautify(value, option)
     end
     local ast = decode_ast(str)
-    local t, k, isarray = query(ast, path)
+    if ast.v == JsonEmpty then
+        local pathlst = split_path(path)
+        value = add_prefix(value, pathlst)
+        return json.beautify(value, option)
+    end
+    local t, k, isarray, lastpath = query(ast, path)
     if not t then
         error(k)
         return
+    end
+    if lastpath then
+        value = add_prefix(value, lastpath)
     end
     if isarray then
         if t.v[k] then
@@ -612,14 +631,21 @@ function OP.add(str, option, path, value)
 end
 
 function OP.remove(str, _, path)
-    if path == '' then
-        return 'null'
+    if path == '/' then
+        return ''
     end
     local ast = decode_ast(str)
-    local t, k, isarray = query(ast, path)
+    if ast.v == JsonEmpty then
+        return ''
+    end
+    local t, k, isarray, lastpath = query(ast, path)
     if not t then
         error(k)
         return
+    end
+    if lastpath then
+        --warning: path does not exist
+        return str
     end
     if isarray then
         if k > #t.v then
@@ -637,17 +663,22 @@ function OP.remove(str, _, path)
 end
 
 function OP.replace(str, option, path, value)
-    if value == nil then
-        return 'null'
-    end
-    if path == '' then
+    if path == '/' then
         return json.beautify(value, option)
     end
     local ast = decode_ast(str)
-    local t, k, isarray = query(ast, path)
+    if ast.v == JsonEmpty then
+        local pathlst = split_path(path)
+        value = add_prefix(value, pathlst)
+        return json.beautify(value, option)
+    end
+    local t, k, isarray, lastpath = query(ast, path)
     if not t then
         error(k)
         return
+    end
+    if lastpath then
+        value = add_prefix(value, lastpath)
     end
     if t.v[k] then
         return apply_replace(str, option, value, t.v[k])

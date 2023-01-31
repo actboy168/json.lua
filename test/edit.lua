@@ -59,7 +59,7 @@ local function TEST(patch)
     for i = 1, #expected do
         if string.byte(actual, i) ~= string.byte(expected, i) then
             local line, col = findline(actual, i)
-            lt.failure("at line %d col %d\nexpected: %s\nactual: %s\n", line, col, expected, actual)
+            lt.failure("at line %d col %d\nexpected: %s\nactual  : %s\n", line, col, expected, actual)
             break
         end
     end
@@ -365,6 +365,49 @@ function testsuc.empty_table()
     "env": {
     },
 }]]
+    }
+end
+
+
+local function TEST_C(test)
+    local expected = test.expected
+    local actual = json.edit(test.doc, test.patch, {
+        newline = "",
+        indent = "",
+        depth = 0,
+    })
+    if actual == expected then
+        return
+    end
+    lt.assertIsString(actual)
+    assert(type(actual) == "string")
+    for i = 1, #expected do
+        if string.byte(actual, i) ~= string.byte(expected, i) then
+            local line, col = findline(actual, i)
+            lt.failure("at line %d col %d\nexpected: %s\nactual  : %s\n", line, col, expected, actual)
+            break
+        end
+    end
+end
+
+function testsuc.conformance()
+    TEST_C {
+        patch = {
+            op = "add",
+            path = "/a/b/c",
+            value = "1",
+        },
+        doc = [[{"a":{}}]],
+        expected = [[{"a":{"b": {"c": "1"}}}]]
+    }
+    TEST_C {
+        patch = {
+            op = "add",
+            path = "/a/b/c",
+            value = "1",
+        },
+        doc = [[]],
+        expected = [[{"a": {"b": {"c": "1"}}}]]
     }
 end
 
