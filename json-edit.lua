@@ -47,7 +47,7 @@ if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
     end
     function table_move(a1, f, e, t, a2)
         for i = f, e do
-           a2[t+i] = a1[i]
+           a2[t+(i-f)] = a1[i]
         end
        return a2
     end
