@@ -383,7 +383,7 @@ local function decode_ast(str)
     statusPos = 1
     statusTop = 0
     if next_byte() == -1 then
-        return json.null
+        return {s = statusPos, d = statusTop, f = statusPos, v = json.null}
     end
     local res = decode()
     while statusTop > 0 do
@@ -406,7 +406,7 @@ end
 local function query_(ast, pathlst, n)
     local data = ast.v
     if type(data) ~= "table" then
-        return
+        return nil, string_format("path `%s` does not point to object or array", "/"..table_concat(pathlst, "/", 1, n-1))
     end
     local k = pathlst[n]
     local isarray = not json.isObject(data)
@@ -415,26 +415,30 @@ local function query_(ast, pathlst, n)
             k = #data + 1
         else
             if k:match "^0%d+" then
-                return
+                return nil, string_format("path `%s` point to array, but invalid", "/"..table_concat(pathlst, "/", 1, n))
             end
             k = tonumber(k)
             if k == nil or math_type(k) ~= "integer" or k <= 0 or k > #data + 1 then
-                return
+                return nil, string_format("path `%s` point to array, but invalid", "/"..table_concat(pathlst, "/", 1, n))
             end
         end
     end
     if n == #pathlst then
         return ast, k, isarray
     end
-    return query_(data[k], pathlst, n + 1)
+    local v = data[k]
+    if v == nil then
+        return nil, string_format("path `%s` is empty", "/"..table_concat(pathlst, "/", 1, n))
+    end
+    return query_(v, pathlst, n + 1)
 end
 
 local function query(ast, path)
     if type(path) ~= "string" then
-        return
+        return nil, "path is not a string"
     end
     if path:sub(1,1) ~= "/" then
-        return
+        return nil, "path must start with `/`"
     end
     return query_(ast, split(path:sub(2)), 1)
 end
@@ -579,7 +583,7 @@ local OP = {}
 
 function OP.add(str, option, path, value)
     if value == nil then
-        return
+        return 'null'
     end
     if path == '' then
         return json.beautify(value, option)
@@ -587,6 +591,7 @@ function OP.add(str, option, path, value)
     local ast = decode_ast(str)
     local t, k, isarray = query(ast, path)
     if not t then
+        error(k)
         return
     end
     if isarray then
@@ -608,21 +613,24 @@ end
 
 function OP.remove(str, _, path)
     if path == '' then
-        return ''
+        return 'null'
     end
     local ast = decode_ast(str)
     local t, k, isarray = query(ast, path)
     if not t then
+        error(k)
         return
     end
     if isarray then
         if k > #t.v then
-            return
+            --warning: path does not exist
+            return str
         end
         return apply_remove(str, t.v[k].s, t.v[k].f)
     else
         if t.v[k] == nil then
-            return
+            --warning: path does not exist
+            return str
         end
         return apply_remove(str, t.v[k].key_s, t.v[k].f)
     end
@@ -630,7 +638,7 @@ end
 
 function OP.replace(str, option, path, value)
     if value == nil then
-        return
+        return 'null'
     end
     if path == '' then
         return json.beautify(value, option)
@@ -638,6 +646,7 @@ function OP.replace(str, option, path, value)
     local ast = decode_ast(str)
     local t, k, isarray = query(ast, path)
     if not t then
+        error(k)
         return
     end
     if t.v[k] then
@@ -658,6 +667,7 @@ end
 local function edit(str, patch, option)
     local f = OP[patch.op]
     if not f then
+        error(string_format("invalid op: %s", patch.op))
         return
     end
     option = json._beautify_option(option)
