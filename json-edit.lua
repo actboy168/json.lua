@@ -45,6 +45,12 @@ if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
         end
         return "float"
     end
+    function table_move(a1, f, e, t, a2)
+        for i = f, e do
+           a2[t+i] = a1[f+i]
+        end
+       return a2
+    end
 else
     utf8_char = utf8.char
     math_type = math.type
