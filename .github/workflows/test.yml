@@ -15,7 +15,6 @@ jobs:
       with:
         luaVersion: ${{ matrix.luaVersion }}
     - run: lua test/conformance.lua -c
-    - run: lua test/benchmark.lua
     - run: lua -e JSONLIB=[[jsonc]] test/conformance.lua
     - run: lua test/jsonc.lua
     - run: lua test/edit.lua
