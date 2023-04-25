@@ -76,7 +76,7 @@ if debug and debug.upvalueid then
     -- Generate a lightuserdata
     json.null = debug.upvalueid(json.createEmptyObject, 1)
 else
-    json.null = function() end
+    json.null = function () end
 end
 
 -- json.encode --
@@ -86,14 +86,14 @@ local statusBuilder
 local encode_map = {}
 
 local encode_escape_map = {
-    [ "\"" ] = "\\\"",
-    [ "\\" ] = "\\\\",
-    [ "/" ]  = "\\/",
-    [ "\b" ] = "\\b",
-    [ "\f" ] = "\\f",
-    [ "\n" ] = "\\n",
-    [ "\r" ] = "\\r",
-    [ "\t" ] = "\\t",
+    ["\""] = "\\\"",
+    ["\\"] = "\\\\",
+    ["/"]  = "\\/",
+    ["\b"] = "\\b",
+    ["\f"] = "\\f",
+    ["\n"] = "\\n",
+    ["\r"] = "\\r",
+    ["\t"] = "\\t",
 }
 
 local decode_escape_set = {}
@@ -254,9 +254,9 @@ local function encode_unexpected(v)
         error("unexpected type '"..type(v).."'")
     end
 end
-encode_map[ "function" ] = encode_unexpected
-encode_map[ "userdata" ] = encode_unexpected
-encode_map[ "thread"   ] = encode_unexpected
+encode_map["function"] = encode_unexpected
+encode_map["userdata"] = encode_unexpected
+encode_map["thread"] = encode_unexpected
 
 function json.encode(v)
     statusVisited = {}
@@ -352,8 +352,8 @@ local function decode_string()
             local s = string_sub(statusBuf, statusPos + 1, i - 1)
             if has_unicode_escape then
                 s = string_gsub(string_gsub(s
-                    , "\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", decode_unicode_surrogate)
-                    , "\\u(%x%x%x%x)", decode_unicode_escape)
+                , "\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", decode_unicode_surrogate)
+                , "\\u(%x%x%x%x)", decode_unicode_escape)
             end
             if has_escape then
                 s = string_gsub(s, "\\.", decode_escape_map)

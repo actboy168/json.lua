@@ -28,17 +28,17 @@ local jsonc_yes = {
 }
 
 local function reload()
-    package.loaded['json'] = nil
+    package.loaded["json"] = nil
     package.loaded[JSONLIB] = nil
     json = require(JSONLIB)
 end
 
-local isWindows = package.config:sub(1,1) == '\\'
+local isWindows = package.config:sub(1, 1) == "\\"
 
 local function each_directory(dir)
     local command = isWindows
-        and "dir /B " .. dir:gsub("/", "\\") .. " 2>nul"
-        or "ls -1 " .. dir
+        and "dir /B "..dir:gsub("/", "\\").." 2>nul"
+        or "ls -1 "..dir
     local lst = {}
     for file in io.popen(command):lines() do
         lst[#lst+1] = file
@@ -66,7 +66,7 @@ local function readfile(path)
 end
 
 local function test_yes(path)
-    return function()
+    return function ()
         local res = json.decode(readfile(path))
         lt.assertEquals(json.decode(json.encode(res)), res)
     end
@@ -74,7 +74,7 @@ end
 
 local ERROR = ": ERROR: "
 local function test_no(path)
-    return function()
+    return function ()
         local ok, msg = pcall(json.decode, readfile(path))
         lt.assertEquals(ok, false)
         lt.assertEquals(msg:match(ERROR), ERROR)
@@ -82,7 +82,7 @@ local function test_no(path)
 end
 
 local function test_impl(path)
-    return function()
+    return function ()
         json.decode(readfile(path))
     end
 end
@@ -92,12 +92,12 @@ function lt.format(className, methodName)
     if className == "parsing" or className == "transform" then
         return ("test/JSONTestSuite/test_%s/%s"):format(className, methodName)
     end
-    return className..'.'..methodName
+    return className.."."..methodName
 end
 
 local parsing = lt.test "parsing"
 for name, path in each_directory "test/JSONTestSuite/test_parsing" do
-    local type = name:sub(1,1)
+    local type = name:sub(1, 1)
     if JSONLIB == "jsonc" and jsonc_yes[name] then
         parsing[name] = test_yes(path)
     elseif type == "y" then
@@ -127,23 +127,23 @@ local other = lt.test "other"
 function other.encode_sparse_array()
     json.supportSparseArray = false
     lt.assertEquals(json.encode {}, "[]")
-    lt.assertEquals(json.encode {1}, "[1]")
-    lt.assertEquals(json.encode {1,2}, "[1,2]")
-    lt.assertError(json.encode, {nil,2})
-    lt.assertError(json.encode, {1,2,nil,4})
-    lt.assertError(json.encode, {1,2,[100]=1})
-    lt.assertError(json.encode, {1,2,a=1})
-    lt.assertError(json.encode, {1,2,[0]=1})
+    lt.assertEquals(json.encode { 1 }, "[1]")
+    lt.assertEquals(json.encode { 1, 2 }, "[1,2]")
+    lt.assertError(json.encode, { nil, 2 })
+    lt.assertError(json.encode, { 1, 2, nil, 4 })
+    lt.assertError(json.encode, { 1, 2,[100] = 1 })
+    lt.assertError(json.encode, { 1, 2, a = 1 })
+    lt.assertError(json.encode, { 1, 2,[0] = 1 })
     json.supportSparseArray = true
-    lt.assertEquals(json.encode {nil,1}, "[null,1]")
+    lt.assertEquals(json.encode { nil, 1 }, "[null,1]")
 end
 
 function other.encode_float()
     lt.assertEquals(json.encode(0.12345678901234566), "0.12345678901234566")
-    lt.assertError(json.encode, function() end)
+    lt.assertError(json.encode, function () end)
     lt.assertError(json.encode, math.huge)
     lt.assertError(json.encode, -math.huge)
-    lt.assertError(json.encode, 0/0)
+    lt.assertError(json.encode, 0 / 0)
     if supportBigInt then
         lt.assertEquals(json.encode(BigInt), tostring(BigInt))
     end
@@ -156,18 +156,19 @@ function other.encode()
     lt.assertEquals(json.isObject(json.decode "[1]"), false)
 
     do
-        local t = {}; t[1] = t
+        local t = {}
+        t[1] = t
         lt.assertError(json.encode, t)
     end
 
     do
-        local t = {1,a=1}
+        local t = { 1, a = 1 }
         lt.assertEquals(next(t), 1)
         lt.assertError(json.encode, t)
     end
 
     do
-        local t = {[true]=true}
+        local t = { [true] = true }
         local i = 1
         repeat
             t[tostring(i)] = true

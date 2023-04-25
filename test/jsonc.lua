@@ -26,7 +26,7 @@ function m.comment()
             "a" : 1e0/**/,
             /**/"b"/**/: [1,2]
         }
-    ]], {a=1,b={1,2}})
+    ]], { a = 1, b = { 1, 2 } })
     test_yes("{/**/}", jsonc.createEmptyObject())
     test_yes("[/**/]", {})
     test_yes("", jsonc.null)
@@ -40,10 +40,10 @@ end
 function m.trailing_comma()
     test_yes([[
         [1,]
-    ]], {1})
+    ]], { 1 })
     test_yes([[
         {"a":1,}
-    ]], {a=1})
+    ]], { a = 1 })
 end
 
 os.exit(lt.run(), true)

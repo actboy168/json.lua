@@ -42,14 +42,14 @@ end
 local json = require "json"
 
 local encode_escape_map = {
-    [ "\"" ] = "\\\"",
-    [ "\\" ] = "\\\\",
-    [ "/" ]  = "\\/",
-    [ "\b" ] = "\\b",
-    [ "\f" ] = "\\f",
-    [ "\n" ] = "\\n",
-    [ "\r" ] = "\\r",
-    [ "\t" ] = "\\t",
+    ["\""] = "\\\"",
+    ["\\"] = "\\\\",
+    ["/"]  = "\\/",
+    ["\b"] = "\\b",
+    ["\f"] = "\\f",
+    ["\n"] = "\\n",
+    ["\r"] = "\\r",
+    ["\t"] = "\\t",
 }
 
 local decode_escape_set = {}
@@ -155,8 +155,8 @@ local function decode_string()
             local s = string_sub(statusBuf, statusPos + 1, i - 1)
             if has_unicode_escape then
                 s = string_gsub(string_gsub(s
-                    , "\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", decode_unicode_surrogate)
-                    , "\\u(%x%x%x%x)", decode_unicode_escape)
+                , "\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", decode_unicode_surrogate)
+                , "\\u(%x%x%x%x)", decode_unicode_escape)
             end
             if has_escape then
                 s = string_gsub(s, "\\.", decode_escape_map)
@@ -280,23 +280,23 @@ local function decode_object()
 end
 
 local decode_uncompleted_map = {
-    [ string_byte '"' ] = decode_string,
-    [ string_byte "0" ] = decode_number_zero,
-    [ string_byte "1" ] = decode_number,
-    [ string_byte "2" ] = decode_number,
-    [ string_byte "3" ] = decode_number,
-    [ string_byte "4" ] = decode_number,
-    [ string_byte "5" ] = decode_number,
-    [ string_byte "6" ] = decode_number,
-    [ string_byte "7" ] = decode_number,
-    [ string_byte "8" ] = decode_number,
-    [ string_byte "9" ] = decode_number,
-    [ string_byte "-" ] = decode_number_negative,
-    [ string_byte "t" ] = decode_true,
-    [ string_byte "f" ] = decode_false,
-    [ string_byte "n" ] = decode_null,
-    [ string_byte "[" ] = decode_array,
-    [ string_byte "{" ] = decode_object,
+    [string_byte '"'] = decode_string,
+    [string_byte "0"] = decode_number_zero,
+    [string_byte "1"] = decode_number,
+    [string_byte "2"] = decode_number,
+    [string_byte "3"] = decode_number,
+    [string_byte "4"] = decode_number,
+    [string_byte "5"] = decode_number,
+    [string_byte "6"] = decode_number,
+    [string_byte "7"] = decode_number,
+    [string_byte "8"] = decode_number,
+    [string_byte "9"] = decode_number,
+    [string_byte "-"] = decode_number_negative,
+    [string_byte "t"] = decode_true,
+    [string_byte "f"] = decode_false,
+    [string_byte "n"] = decode_null,
+    [string_byte "["] = decode_array,
+    [string_byte "{"] = decode_object,
 }
 local function unexpected_character()
     decode_error("unexpected character '"..string_sub(statusBuf, statusPos, statusPos).."'")

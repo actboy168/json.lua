@@ -35,11 +35,11 @@ local function findline(str, positon)
     local line = 1
     local pos = 1
     while true do
-        local f, _, nl1, nl2 = str:find('([\n\r])([\n\r]?)', pos)
+        local f, _, nl1, nl2 = str:find("([\n\r])([\n\r]?)", pos)
         if not f then
             return line, positon - pos + 1
         end
-        local newpos = f + ((nl1 == nl2 or nl2 == '') and 1 or 2)
+        local newpos = f + ((nl1 == nl2 or nl2 == "") and 1 or 2)
         if newpos > positon then
             return line, positon - pos + 1
         end
@@ -172,7 +172,7 @@ function testsuc.add()
     TEST {
         op = "add",
         path = "/outputCapture",
-        value = {"print"},
+        value = { "print" },
         expected = [[
 {
     /*
@@ -367,7 +367,6 @@ function testsuc.empty_table()
 }]]
     }
 end
-
 
 local function TEST_C(test)
     local expected = test.expected
