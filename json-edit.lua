@@ -39,15 +39,17 @@ if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
         end
         error(string_format("invalid UTF-8 code '%x'", c))
     end
+
     function math_type(v)
         if v >= -2147483648 and v <= 2147483647 and math_floor(v) == v then
             return "integer"
         end
         return "float"
     end
+
     function table_move(a1, f, e, t, a2)
         for i = f, e do
-           a2[t+(i-f)] = a1[i]
+            a2[t + (i - f)] = a1[i]
         end
        return a2
     end
@@ -87,11 +89,11 @@ local function find_line()
     local line = 1
     local pos = 1
     while true do
-        local f, _, nl1, nl2 = string_find(statusBuf, '([\n\r])([\n\r]?)', pos)
+        local f, _, nl1, nl2 = string_find(statusBuf, "([\n\r])([\n\r]?)", pos)
         if not f then
             return line, statusPos - pos + 1
         end
-        local newpos = f + ((nl1 == nl2 or nl2 == '') and 1 or 2)
+        local newpos = f + ((nl1 == nl2 or nl2 == "") and 1 or 2)
         if newpos > statusPos then
             return line, statusPos - pos + 1
         end
@@ -112,7 +114,7 @@ local function skip_comment(b)
     if b ~= 47 --[[ '/' ]] then
         return
     end
-    local c = string_byte(statusBuf, statusPos+1)
+    local c = string_byte(statusBuf, statusPos + 1)
     if c == 42 --[[ '*' ]] then
         -- block comment
         local pos = string_find(statusBuf, "*/", statusPos)
@@ -183,9 +185,9 @@ local function decode_string()
             return s
         end
         --assert(x == 92 --[[ "\\" ]])
-        local nx = string_byte(statusBuf, i+1)
+        local nx = string_byte(statusBuf, i + 1)
         if nx == 117 --[[ "u" ]] then
-            if not string_match(statusBuf, "^%x%x%x%x", i+2) then
+            if not string_match(statusBuf, "^%x%x%x%x", i + 2) then
                 statusPos = i
                 decode_error "invalid unicode escape in string"
             end
@@ -194,7 +196,7 @@ local function decode_string()
         else
             if not decode_escape_set[nx] then
                 statusPos = i
-                decode_error("invalid escape char '" .. (nx and string_char(nx) or "<eol>") .. "' in string")
+                decode_error("invalid escape char '"..(nx and string_char(nx) or "<eol>").."' in string")
             end
             has_escape = true
             i = i + 2
@@ -203,14 +205,14 @@ local function decode_string()
 end
 
 local function decode_number()
-    local num, c = string_match(statusBuf, '^([0-9]+%.?[0-9]*)([eE]?)', statusPos)
+    local num, c = string_match(statusBuf, "^([0-9]+%.?[0-9]*)([eE]?)", statusPos)
     if not num or string_byte(num, -1) == 0x2E --[[ "." ]] then
-        decode_error("invalid number '" .. get_word() .. "'")
+        decode_error("invalid number '"..get_word().."'")
     end
-    if c ~= '' then
-        num = string_match(statusBuf, '^([^eE]*[eE][-+]?[0-9]+)[ \t\r\n%]},/]', statusPos)
+    if c ~= "" then
+        num = string_match(statusBuf, "^([^eE]*[eE][-+]?[0-9]+)[ \t\r\n%]},/]", statusPos)
         if not num then
-            decode_error("invalid number '" .. get_word() .. "'")
+            decode_error("invalid number '"..get_word().."'")
         end
     end
     statusPos = statusPos + #num
@@ -218,14 +220,14 @@ local function decode_number()
 end
 
 local function decode_number_zero()
-    local num, c = string_match(statusBuf, '^(.%.?[0-9]*)([eE]?)', statusPos)
-    if not num or string_byte(num, -1) == 0x2E --[[ "." ]] or string_match(statusBuf, '^.[0-9]+', statusPos) then
-        decode_error("invalid number '" .. get_word() .. "'")
+    local num, c = string_match(statusBuf, "^(.%.?[0-9]*)([eE]?)", statusPos)
+    if not num or string_byte(num, -1) == 0x2E --[[ "." ]] or string_match(statusBuf, "^.[0-9]+", statusPos) then
+        decode_error("invalid number '"..get_word().."'")
     end
-    if c ~= '' then
-        num = string_match(statusBuf, '^([^eE]*[eE][-+]?[0-9]+)[ \t\r\n%]},/]', statusPos)
+    if c ~= "" then
+        num = string_match(statusBuf, "^([^eE]*[eE][-+]?[0-9]+)[ \t\r\n%]},/]", statusPos)
         if not num then
-            decode_error("invalid number '" .. get_word() .. "'")
+            decode_error("invalid number '"..get_word().."'")
         end
     end
     statusPos = statusPos + #num
@@ -242,28 +244,28 @@ local function decode_number_negative()
             return -decode_number()
         end
     end
-    decode_error("invalid number '" .. get_word() .. "'")
+    decode_error("invalid number '"..get_word().."'")
 end
 
 local function decode_true()
-    if string_sub(statusBuf, statusPos, statusPos+3) ~= "true" then
-        decode_error("invalid literal '" .. get_word() .. "'")
+    if string_sub(statusBuf, statusPos, statusPos + 3) ~= "true" then
+        decode_error("invalid literal '"..get_word().."'")
     end
     statusPos = statusPos + 4
     return true
 end
 
 local function decode_false()
-    if string_sub(statusBuf, statusPos, statusPos+4) ~= "false" then
-        decode_error("invalid literal '" .. get_word() .. "'")
+    if string_sub(statusBuf, statusPos, statusPos + 4) ~= "false" then
+        decode_error("invalid literal '"..get_word().."'")
     end
     statusPos = statusPos + 5
     return false
 end
 
 local function decode_null()
-    if string_sub(statusBuf, statusPos, statusPos+3) ~= "null" then
-        decode_error("invalid literal '" .. get_word() .. "'")
+    if string_sub(statusBuf, statusPos, statusPos + 3) ~= "null" then
+        decode_error("invalid literal '"..get_word().."'")
     end
     statusPos = statusPos + 4
     return json.null
@@ -319,7 +321,7 @@ local decode_uncompleted_map = {
     [ string_byte "{" ] = decode_object,
 }
 local function unexpected_character()
-    decode_error("unexpected character '" .. string_sub(statusBuf, statusPos, statusPos) .. "'")
+    decode_error("unexpected character '"..string_sub(statusBuf, statusPos, statusPos).."'")
 end
 local function unexpected_eol()
     decode_error("unexpected character '<eol>'")
@@ -333,7 +335,7 @@ decode_map[-1] = unexpected_eol
 
 local function decode()
     local chr = next_byte()
-    local ast = {s = statusPos, d = statusTop}
+    local ast = { s = statusPos, d = statusTop }
     ast.v = decode_map[chr](ast)
     ast.f = statusPos
     return ast
@@ -359,7 +361,8 @@ local function decode_item()
     end
     if top == statusTop then
         repeat
-            local chr = next_byte(); statusPos = statusPos + 1
+            local chr = next_byte()
+            statusPos = statusPos + 1
             if chr == 44 --[[ "," ]] then
                 local c = next_byte()
                 if statusAry[statusTop] then
@@ -386,13 +389,13 @@ local JsonEmpty = function () end
 
 local function decode_ast(str)
     if type(str) ~= "string" then
-        error("expected argument of type string, got " .. type(str))
+        error("expected argument of type string, got "..type(str))
     end
     statusBuf = str
     statusPos = 1
     statusTop = 0
     if next_byte() == -1 then
-        return {s = statusPos, d = statusTop, f = statusPos, v = JsonEmpty}
+        return { s = statusPos, d = statusTop, f = statusPos, v = JsonEmpty }
     end
     local res = decode()
     while statusTop > 0 do
@@ -406,7 +409,7 @@ end
 
 local function split(s)
     local r = {}
-    s:gsub('[^/]+', function (w)
+    s:gsub("[^/]+", function (w)
         r[#r+1] = w:gsub("~1", "/"):gsub("~0", "~")
     end)
     return r
@@ -415,7 +418,7 @@ end
 local function query_(ast, pathlst, n)
     local data = ast.v
     if type(data) ~= "table" then
-        return nil, string_format("path `%s` does not point to object or array", "/"..table_concat(pathlst, "/", 1, n-1))
+        return nil, string_format("path `%s` does not point to object or array", "/"..table_concat(pathlst, "/", 1, n - 1))
     end
     local k = pathlst[n]
     local isarray = not json.isObject(data)
@@ -446,7 +449,7 @@ local function split_path(path)
     if type(path) ~= "string" then
         return nil, "path is not a string"
     end
-    if path:sub(1,1) ~= "/" then
+    if path:sub(1, 1) ~= "/" then
         return nil, "path must start with `/`"
     end
     return split(path:sub(2))
@@ -459,9 +462,9 @@ end
 local function del_first_empty_line(str)
     local pos = str:match("()[ \t]*$")
     if pos then
-        local nl1 = str:sub(pos-1, pos-1)
+        local nl1 = str:sub(pos - 1, pos - 1)
         if nl1:match "[\r\n]" then
-            return pos-1
+            return pos - 1
         end
     end
 end
@@ -471,11 +474,11 @@ local function del_last_empty_line(str)
     if pos then
         local nl1 = str:sub(pos, pos)
         if nl1:match "[\r\n]" then
-            local nl2 = str:sub(pos+1, pos+1)
+            local nl2 = str:sub(pos + 1, pos + 1)
             if nl2:match "[\r\n]" and nl1 ~= nl2 then
-                return pos+2
+                return pos + 2
             else
-                return pos+1
+                return pos + 1
             end
         end
     end
@@ -496,7 +499,7 @@ local function encode_newline(option)
 end
 
 local function apply_array_insert_before(str, option, value, node)
-    local start_text = str:sub(1, node.s-1)
+    local start_text = str:sub(1, node.s - 1)
     local finish_text = str:sub(node.s)
     option.depth = option.depth + node.d
     local bd = {}
@@ -509,7 +512,7 @@ local function apply_array_insert_before(str, option, value, node)
 end
 
 local function apply_array_insert_after(str, option, value, node)
-    local start_text = str:sub(1, node.f-1)
+    local start_text = str:sub(1, node.f - 1)
     local finish_text = str:sub(node.f)
     option.depth = option.depth + node.d
     local bd = {}
@@ -523,7 +526,7 @@ end
 
 local function apply_array_insert_empty(str, option, value, node)
     local start_text = str:sub(1, node.s)
-    local finish_text = str:sub(node.f-1)
+    local finish_text = str:sub(node.f - 1)
     option.depth = option.depth + node.d + 1
     local bd = {}
     bd[#bd+1] = start_text
@@ -536,7 +539,7 @@ local function apply_array_insert_empty(str, option, value, node)
 end
 
 local function apply_replace(str, option, value, node)
-    local start_text = str:sub(1, node.s-1)
+    local start_text = str:sub(1, node.s - 1)
     local finish_text = str:sub(node.f)
     option.depth = option.depth + node.d
     local bd = {}
@@ -549,7 +552,7 @@ end
 local function apply_object_insert(str, option, value, t, k)
     local node = find_max_node(t.v)
     if node then
-        local start_text = str:sub(1, node.f-1)
+        local start_text = str:sub(1, node.f - 1)
         local finish_text = str:sub(node.f)
         option.depth = option.depth + node.d
         local bd = {}
@@ -564,7 +567,7 @@ local function apply_object_insert(str, option, value, t, k)
         return table_concat(bd)
     else
         local start_text = str:sub(1, t.s)
-        local finish_text = str:sub(t.f-1)
+        local finish_text = str:sub(t.f - 1)
         option.depth = option.depth + t.d + 1
         local bd = {}
         bd[#bd+1] = start_text
@@ -581,14 +584,14 @@ local function apply_object_insert(str, option, value, t, k)
 end
 
 local function apply_remove(str, s, f)
-    local start_text = str:sub(1, s-1)
-    local finish_text = str:sub(f+1)
+    local start_text = str:sub(1, s - 1)
+    local finish_text = str:sub(f + 1)
     local start_pos = del_first_empty_line(start_text)
     local finish_pos = del_last_empty_line(finish_text)
     if start_pos and finish_pos then
-        return start_text:sub(1,start_pos) .. finish_text:sub(finish_pos)
+        return start_text:sub(1, start_pos)..finish_text:sub(finish_pos)
     else
-        return start_text .. finish_text
+        return start_text..finish_text
     end
 end
 
@@ -602,7 +605,7 @@ end
 local OP = {}
 
 function OP.add(str, option, path, value)
-    if path == '/' then
+    if path == "/" then
         return json.beautify(value, option)
     end
     local ast = decode_ast(str)
@@ -625,7 +628,7 @@ function OP.add(str, option, path, value)
         elseif k == 1 then
             return apply_array_insert_empty(str, option, value, t)
         else
-            return apply_array_insert_after(str, option, value, t.v[k-1])
+            return apply_array_insert_after(str, option, value, t.v[k - 1])
         end
     else
         if t.v[k] then
@@ -637,12 +640,12 @@ function OP.add(str, option, path, value)
 end
 
 function OP.remove(str, _, path)
-    if path == '/' then
-        return ''
+    if path == "/" then
+        return ""
     end
     local ast = decode_ast(str)
     if ast.v == JsonEmpty then
-        return ''
+        return ""
     end
     local t, k, isarray, lastpath = query(ast, path)
     if not t then
@@ -669,7 +672,7 @@ function OP.remove(str, _, path)
 end
 
 function OP.replace(str, option, path, value)
-    if path == '/' then
+    if path == "/" then
         return json.beautify(value, option)
     end
     local ast = decode_ast(str)
@@ -693,7 +696,7 @@ function OP.replace(str, option, path, value)
             if k == 1 then
                 return apply_array_insert_empty(str, option, value, t)
             else
-                return apply_array_insert_after(str, option, value, t.v[k-1])
+                return apply_array_insert_after(str, option, value, t.v[k - 1])
             end
         else
             return apply_object_insert(str, option, value, t, k)

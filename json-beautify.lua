@@ -39,7 +39,7 @@ end
 
 local encode_map = {}
 local encode_string = json._encode_string
-for k ,v in next, json._encode_map do
+for k, v in next, json._encode_map do
     encode_map[k] = v
 end
 
@@ -67,7 +67,7 @@ function encode_map.table(t)
         error("circular reference")
     end
     statusVisited[t] = true
-    if type(first_val) == 'string' then
+    if type(first_val) == "string" then
         local key = {}
         for k in next, t do
             if type(k) ~= "string" then
@@ -137,8 +137,8 @@ function encode_map.table(t)
             encode(t[count])
             count = count + 1
         end
-        if next(t, count-1) ~= nil then
-            local k = next(t, count-1)
+        if next(t, count - 1) ~= nil then
+            local k = next(t, count - 1)
             if type(k) == "number" then
                 error("invalid table: sparse array is not supported")
             else
