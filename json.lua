@@ -522,7 +522,7 @@ local function decode_item()
     end
     if top == statusTop then
         repeat
-            local chr = next_byte();
+            local chr = next_byte()
             statusPos = statusPos + 1
             if chr == 44 --[[ "," ]] then
                 return
