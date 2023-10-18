@@ -5,7 +5,7 @@
             "name": "conformance",
             "type": "lua",
             "request": "launch",
-            "luaVersion": "5.4",
+            "luaVersion": "lua54",
             "luaArch": "x86_64",
             "console": "integratedTerminal",
             "outputCapture": [
@@ -21,7 +21,7 @@
             "name": "benchmark",
             "type": "lua",
             "request": "launch",
-            "luaVersion": "5.4",
+            "luaVersion": "lua54",
             "luaArch": "x86_64",
             "console": "integratedTerminal",
             "outputCapture": [
@@ -32,7 +32,7 @@
             "name": "edit",
             "type": "lua",
             "request": "launch",
-            "luaVersion": "5.4",
+            "luaVersion": "lua54",
             "luaArch": "x86_64",
             "console": "integratedTerminal",
             "outputCapture": [
