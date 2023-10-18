@@ -27,6 +27,16 @@ assert(not json.isObject(json.decode "{}"))
 assert(json.isObject(json.decode "[]"))
 ```
 
+* Sparse Array
+
+```lua
+assert(json.encode {1,2,[4] = 4} == "[1,2,null,4]")
+json.supportSparseArray = false
+local ok, err = pcall(json.encode, {1,2,[4] = 4})
+assert(ok == false)
+assert(err:match "invalid table: sparse array is not supported")
+```
+
 ## Optional advanced features
 
 * json-beautify
