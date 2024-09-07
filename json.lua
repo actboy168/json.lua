@@ -222,6 +222,7 @@ function encode_map.table(t)
         if t[1] == nil then
             error("invalid table: sparse array is not supported")
         end
+        ---@diagnostic disable-next-line: undefined-global
         if jit and t[0] ~= nil then
             -- 0 is the first index in luajit
             error("invalid table: mixed or invalid key types: "..0)

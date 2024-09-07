@@ -1,8 +1,5 @@
 {
     "diagnostics": {
-        "globals": [
-            "jit"
-        ],
         "groupFileStatus": {
             "unused": "Any"
         },
