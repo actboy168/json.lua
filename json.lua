@@ -550,7 +550,7 @@ function json.decode(str)
         decode_item()
     end
     if string_find(statusBuf, "[^ \t\r\n]", statusPos) then
-        decode_error "trailing garbage"
+        decode_error(string_format("trailing garbage '%s'", string_sub(statusBuf, statusPos)))
     end
     return res
 end
