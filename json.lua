@@ -344,12 +344,12 @@ local function decode_string()
         if not i then
             decode_error "expected closing quote for string"
         end
-        local x = string_byte(statusBuf, i)
-        if x < 32 then
+        local char = string_byte(statusBuf, i)
+        if char < 32 then
             statusPos = i
             decode_error "control character in string"
         end
-        if x == 34 --[[ '"' ]] then
+        if char == 34 --[[ '"' ]] then
             local s = string_sub(statusBuf, statusPos + 1, i - 1)
             if has_unicode_escape then
                 s = string_gsub(string_gsub(s
@@ -362,9 +362,9 @@ local function decode_string()
             statusPos = i + 1
             return s
         end
-        --assert(x == 92 --[[ "\\" ]])
-        local nx = string_byte(statusBuf, i + 1)
-        if nx == 117 --[[ "u" ]] then
+        --assert(char == 92 --[[ "\\" ]])
+        local next_char = string_byte(statusBuf, i + 1)
+        if next_char == 117 --[[ "u" ]] then
             if not string_match(statusBuf, "^%x%x%x%x", i + 2) then
                 statusPos = i
                 decode_error "invalid unicode escape in string"
@@ -372,9 +372,9 @@ local function decode_string()
             has_unicode_escape = true
             i = i + 6
         else
-            if not decode_escape_set[nx] then
+            if not decode_escape_set[next_char] then
                 statusPos = i
-                decode_error("invalid escape char '"..(nx and string_char(nx) or "<eol>").."' in string")
+                decode_error("invalid escape char '"..(next_char and string_char(next_char) or "<eol>").."' in string")
             end
             has_escape = true
             i = i + 2
