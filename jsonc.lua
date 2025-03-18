@@ -359,6 +359,9 @@ function json.decode_jsonc(str)
     statusBuf = str
     statusPos = 1
     statusTop = 0
+    if str == "" then
+        decode_error("empty string is not a valid JSON value")
+    end
     if next_byte() == -1 then
         return json.null
     end

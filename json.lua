@@ -145,8 +145,10 @@ if string_match(tostring(1 / 2), "%p") == "," then
 end
 
 function encode_map.number(v)
-    if v ~= v or v <= tiny or v >= huge then
-        error("unexpected number value '"..tostring(v).."'")
+    if v ~= v then
+        error("NaN is not supported in JSON")
+    elseif v <= tiny or v >= huge then
+        error("Inf is not supported in JSON")
     end
     if math_type(v) == "integer" then
         return string_format("%d", v)
@@ -179,7 +181,7 @@ function encode_map.table(t)
         local keys = {}
         for k in next, t do
             if type(k) ~= "string" then
-                error("invalid table: mixed or invalid key types: "..k)
+                error("invalid table: mixed or invalid key types: "..tostring(k))
             end
             keys[#keys+1] = k
         end
@@ -204,7 +206,7 @@ function encode_map.table(t)
         local max = 0
         for k in next, t do
             if math_type(k) ~= "integer" or k <= 0 then
-                error("invalid table: mixed or invalid key types: "..k)
+                error("invalid table: mixed or invalid key types: "..tostring(k))
             end
             if max < k then
                 max = k
@@ -240,7 +242,7 @@ function encode_map.table(t)
             if type(k) == "number" then
                 error("invalid table: sparse array is not supported")
             else
-                error("invalid table: mixed or invalid key types: "..k)
+                error("invalid table: mixed or invalid key types: "..tostring(k))
             end
         end
         statusVisited[t] = nil
@@ -545,6 +547,9 @@ function json.decode(str)
     statusBuf = str
     statusPos = 1
     statusTop = 0
+    if str == "" then
+        decode_error("empty string is not a valid JSON value")
+    end
     local res = decode()
     while statusTop > 0 do
         decode_item()

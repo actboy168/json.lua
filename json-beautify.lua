@@ -68,26 +68,26 @@ function encode_map.table(t)
     end
     statusVisited[t] = true
     if type(first_val) == "string" then
-        local key = {}
+        local keys = {}
         for k in next, t do
             if type(k) ~= "string" then
-                error("invalid table: mixed or invalid key types: "..k)
+                error("invalid table: mixed or invalid key types: "..tostring(k))
             end
-            key[#key+1] = k
+            keys[#keys+1] = k
         end
-        table_sort(key)
+        table_sort(keys)
         statusBuilder[#statusBuilder+1] = "{"
         statusDep = statusDep + 1
         encode_newline()
         do
-            local k = key[1]
+            local k = keys[1]
             statusBuilder[#statusBuilder+1] = '"'
             statusBuilder[#statusBuilder+1] = encode_string(k)
             statusBuilder[#statusBuilder+1] = '": '
             encode(t[k])
         end
-        for i = 2, #key do
-            local k = key[i]
+        for i = 2, #keys do
+            local k = keys[i]
             statusBuilder[#statusBuilder+1] = ","
             encode_newline()
             statusBuilder[#statusBuilder+1] = '"'
@@ -103,7 +103,7 @@ function encode_map.table(t)
         local max = 0
         for k in next, t do
             if math_type(k) ~= "integer" or k <= 0 then
-                error("invalid table: mixed or invalid key types: "..k)
+                error("invalid table: mixed or invalid key types: "..tostring(k))
             end
             if max < k then
                 max = k
@@ -126,6 +126,11 @@ function encode_map.table(t)
         if t[1] == nil then
             error("invalid table: sparse array is not supported")
         end
+        ---@diagnostic disable-next-line: undefined-global
+        if jit and t[0] ~= nil then
+            -- 0 is the first index in luajit
+            error("invalid table: mixed or invalid key types: "..0)
+        end
         statusBuilder[#statusBuilder+1] = "["
         statusDep = statusDep + 1
         encode_newline()
@@ -142,7 +147,7 @@ function encode_map.table(t)
             if type(k) == "number" then
                 error("invalid table: sparse array is not supported")
             else
-                error("invalid table: mixed or invalid key types: "..k)
+                error("invalid table: mixed or invalid key types: "..tostring(k))
             end
         end
         statusDep = statusDep - 1
