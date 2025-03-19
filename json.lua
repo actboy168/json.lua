@@ -145,13 +145,15 @@ if string_match(tostring(1 / 2), "%p") == "," then
 end
 
 function encode_map.number(v)
-    if v ~= v then
-        error("NaN is not supported in JSON")
-    elseif v <= tiny or v >= huge then
-        error("Inf is not supported in JSON")
-    end
     if math_type(v) == "integer" then
         return string_format("%d", v)
+    end
+    if v ~= v then
+        error("NaN is not supported in JSON")
+    elseif v <= tiny then
+        error("-Inf is not supported in JSON")
+    elseif v >= huge then
+        error("Inf is not supported in JSON")
     end
     return convertreal(v)
 end
