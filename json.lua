@@ -129,21 +129,6 @@ function encode_map.string(v)
     return '"'
 end
 
-local function convertreal(v)
-    local g = string_format("%.16g", v)
-    if tonumber(g) == v then
-        return g
-    end
-    return string_format("%.17g", v)
-end
-
-if string_match(tostring(1 / 2), "%p") == "," then
-    local _convertreal = convertreal
-    function convertreal(v)
-        return string_gsub(_convertreal(v), ",", ".")
-    end
-end
-
 function encode_map.number(v)
     if math_type(v) == "integer" then
         return string_format("%d", v)
@@ -155,7 +140,18 @@ function encode_map.number(v)
     elseif v >= huge then
         error("Inf is not supported in JSON")
     end
-    return convertreal(v)
+    local g = string_format("%.16g", v)
+    if tonumber(g) == v then
+        return g
+    end
+    return string_format("%.17g", v)
+end
+
+if string_match(tostring(1 / 2), "%p") == "," then
+    local _encode_number = encode_map.number
+    function encode_map.number(v)
+        return string_gsub(_encode_number(v), ",", ".")
+    end
 end
 
 function encode_map.boolean(v)
