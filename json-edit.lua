@@ -290,7 +290,7 @@ local function decode_object(ast)
     statusPos = statusPos + 1
     local res = {}
     local chr = next_byte()
-    if chr == 125 --[[ ']' ]] then
+    if chr == 125 --[[ '}' ]] then
         statusPos = statusPos + 1
         return json.createEmptyObject()
     end
@@ -602,9 +602,9 @@ local function add_prefix(v, pathlst)
     return v
 end
 
-local OP = {}
+local operations = {}
 
-function OP.add(str, option, path, value)
+function operations.add(str, option, path, value)
     if path == "/" then
         return json.beautify(value, option)
     end
@@ -639,7 +639,7 @@ function OP.add(str, option, path, value)
     end
 end
 
-function OP.remove(str, _, path)
+function operations.remove(str, _, path)
     if path == "/" then
         return ""
     end
@@ -671,7 +671,7 @@ function OP.remove(str, _, path)
     end
 end
 
-function OP.replace(str, option, path, value)
+function operations.replace(str, option, path, value)
     if path == "/" then
         return json.beautify(value, option)
     end
@@ -705,7 +705,7 @@ function OP.replace(str, option, path, value)
 end
 
 local function edit(str, patch, option)
-    local f = OP[patch.op]
+    local f = operations[patch.op]
     if not f then
         error(string_format("invalid op: %s", patch.op))
         return

@@ -4,7 +4,7 @@ package.path = table.concat({
 }, ";")
 
 JSONLIB = JSONLIB or "json"
-local supportBigInt = _VERSION ~= "Lua 5.1" and _VERSION ~= "Lua 5.2"
+local isBigIntSupported = _VERSION ~= "Lua 5.1" and _VERSION ~= "Lua 5.2"
 
 local lt = require "ltest"
 local json = require(JSONLIB)
@@ -144,7 +144,7 @@ function other.encode_float()
     lt.assertError(json.encode, math.huge)
     lt.assertError(json.encode, -math.huge)
     lt.assertError(json.encode, 0 / 0)
-    if supportBigInt then
+    if isBigIntSupported then
         lt.assertEquals(json.encode(BigInt), tostring(BigInt))
     end
 end
@@ -206,7 +206,7 @@ end
 
 function other.decode()
     lt.assertError(json.decode, 1)
-    if supportBigInt then
+    if isBigIntSupported then
         lt.assertEquals(json.decode(tostring(BigInt)), BigInt)
     end
 end

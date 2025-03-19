@@ -8,8 +8,8 @@ local jsonc = require "jsonc"
 
 local m = lt.test "jsonc"
 
-local function test_yes(input, ouput)
-    lt.assertEquals(jsonc.encode(jsonc.decode_jsonc(input)), jsonc.encode(ouput))
+local function test_yes(input, output)
+    lt.assertEquals(jsonc.encode(jsonc.decode_jsonc(input)), jsonc.encode(output))
 end
 local function test_no(input)
     lt.assertError(jsonc.decode_jsonc, input)
